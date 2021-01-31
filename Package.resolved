@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "yyjson",
+        "repositoryURL": "https://github.com/ibireme/yyjson.git",
+        "state": {
+          "branch": null,
+          "revision": "54e3aa3afb9c97aab2a0a1f66df4837a50614f1d",
+          "version": "0.2.0"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
