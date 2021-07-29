@@ -10,7 +10,7 @@ let package = Package(
       targets: ["YYJSONEncoder"]),
   ],
   dependencies: [
-    .package(url: "https://github.com/ibireme/yyjson.git", .upToNextMinor(from: "0.2.0")),
+    .package(url: "https://github.com/ibireme/yyjson.git", .upToNextMajor(from: "0.2.0")),
   ],
   targets: [
     .target(

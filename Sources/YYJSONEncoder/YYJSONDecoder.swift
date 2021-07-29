@@ -26,7 +26,7 @@ public enum YYJSONDecodeError: Error, CustomStringConvertible {
 }
 
 func safeYYRead(dat: UnsafeMutablePointer<Int8>?, count: Int,
-                flag: YYJSONDecoder.ReadFlag, alc: UnsafeMutablePointer<yyjson_alc>?)
+                flag: YYJSONDecoder.ReadFlags, alc: UnsafeMutablePointer<yyjson_alc>?)
 throws -> UnsafeMutablePointer<yyjson_doc> {
   var error = yyjson_read_err()
   guard let doc = yyjson_read_opts(dat, count, flag.rawValue & ~YYJSON_READ_INSITU, alc, &error) else {
@@ -36,7 +36,7 @@ throws -> UnsafeMutablePointer<yyjson_doc> {
 }
 
 extension YYJSONDecoder {
-  public struct ReadFlag: OptionSet {
+  public struct ReadFlags: OptionSet {
     public var rawValue: UInt32
 
     public init(rawValue: UInt32) {
@@ -55,19 +55,23 @@ extension YYJSONDecoder {
 
 public struct YYJSONDecoder {
 
-  public var flag: ReadFlag
+  public var flag: ReadFlags
 
-  public init(flag: ReadFlag = .none) {
+  public init(flag: ReadFlags = .none) {
     self.flag = flag
   }
 
   public func decode<T: Decodable>(_ type: T.Type = T.self, from doc: UnsafeMutablePointer<yyjson_doc>) throws -> T {
-    try T(from: _YYJSONDecoder(doc: doc, codingPath: [], userInfo: .init()))
+    try T(from: _YYJSONDecoder(root: doc.pointee.root, codingPath: [], userInfo: .init()))
   }
 
   public func decode<T: Decodable>(_ type: T.Type = T.self, from string: String) throws -> T {
-    let doc = try string.withCString { str in
-      try safeYYRead(dat: .init(mutating: str), count: strlen(str), flag: flag, alc: nil)
+    var copy = string
+    let doc = try copy.withUTF8 { buffer in
+      try buffer.withMemoryRebound(to: Int8.self) { i8Buffer in
+        try safeYYRead(dat: i8Buffer.baseAddress.map(UnsafeMutablePointer.init),
+                       count: i8Buffer.count, flag: flag, alc: nil)
+      }
     }
 
     defer { yyjson_doc_free(doc) }
@@ -89,13 +93,6 @@ struct _YYJSONDecoder: Decoder {
   init(root: UnsafeMutablePointer<yyjson_val>, codingPath: [CodingKey],
        userInfo: [CodingUserInfoKey : Any]) {
     self.root = root
-    self.codingPath = codingPath
-    self.userInfo = userInfo
-  }
-
-  init(doc: UnsafeMutablePointer<yyjson_doc>, codingPath: [CodingKey],
-       userInfo: [CodingUserInfoKey : Any]) throws {
-    self.root = yyjson_doc_get_root(doc)!
     self.codingPath = codingPath
     self.userInfo = userInfo
   }
@@ -440,6 +437,14 @@ extension _YYJSONDecoder: SingleValueDecodingContainer {
 extension _YYJSONDecoder {
 
   func convertInteger<Output: FixedWidthInteger>() throws -> Output {
+
+    func convert<Input: FixedWidthInteger, Output: FixedWidthInteger>(_ input: Input) throws -> Output {
+      guard let number = Output(exactly: input) else {
+        throw YYJSONDecodeError.numberOverflow(source: input, target: Output.self)
+      }
+      return number
+    }
+
     if unsafe_yyjson_is_sint(root) {
       return try convert(unsafe_yyjson_get_sint(root))
     } else if unsafe_yyjson_is_uint(root) {
@@ -447,13 +452,6 @@ extension _YYJSONDecoder {
     } else {
       throw YYJSONDecodeError.typeMismatch
     }
-  }
-
-  func convert<Input: FixedWidthInteger, Output: FixedWidthInteger>(_ input: Input) throws -> Output {
-    guard let number = Output(exactly: input) else {
-      throw YYJSONDecodeError.numberOverflow(source: input, target: Output.self)
-    }
-    return number
   }
 
   func getInt64() throws -> Int64 {
