@@ -1,4 +1,5 @@
 import yyjson
+import JSON
 
 public enum YYJSONEncoderError: Error, CustomStringConvertible {
   case yyjsonWriteError(code: UInt32, message: String)
@@ -29,22 +30,10 @@ public enum YYJSONEncoderError: Error, CustomStringConvertible {
 }
 
 extension YYJSONEncoder {
-  public struct WriteFlags: OptionSet {
-    public var rawValue: UInt32
-
-    public init(rawValue: UInt32) {
-      self.rawValue = rawValue
-    }
-
-    public static let none = Self(rawValue: YYJSON_WRITE_NOFLAG)
-    public static let pretty = Self(rawValue: YYJSON_WRITE_PRETTY)
-    public static let escapeUnicode = Self(rawValue: YYJSON_WRITE_ESCAPE_UNICODE)
-    public static let escapeSlashes = Self(rawValue: YYJSON_WRITE_ESCAPE_SLASHES)
-    public static let allowInfAndNan = Self(rawValue: YYJSON_WRITE_ALLOW_INF_AND_NAN)
-  }
+  
 }
 
-func writeString(doc: UnsafeMutablePointer<yyjson_doc>, flag: YYJSONEncoder.WriteFlags) throws -> String {
+func writeString(doc: UnsafeMutablePointer<yyjson_doc>, flag: JSON.WriteOptions) throws -> String {
   var length = 0
   var error = yyjson_write_err()
   if let cstr = yyjson_write_opts(doc, flag.rawValue, nil, &length, &error) {
@@ -58,7 +47,7 @@ func writeString(doc: UnsafeMutablePointer<yyjson_doc>, flag: YYJSONEncoder.Writ
   throw YYJSONEncoderError.yyjsonWriteError(error)
 }
 
-func writeString(doc: UnsafeMutablePointer<yyjson_mut_doc>, flag: YYJSONEncoder.WriteFlags) throws -> String {
+func writeString(doc: UnsafeMutablePointer<yyjson_mut_doc>, flag: JSON.WriteOptions) throws -> String {
   var length = 0
   var error = yyjson_write_err()
   if let cstr = yyjson_mut_write_opts(doc, flag.rawValue, nil, &length, &error) {
@@ -73,7 +62,7 @@ func writeString(doc: UnsafeMutablePointer<yyjson_mut_doc>, flag: YYJSONEncoder.
 }
 
 private func writeFile(path: UnsafePointer<Int8>, doc: UnsafeMutablePointer<yyjson_doc>?,
-               flag: YYJSONEncoder.WriteFlags, alc: UnsafeMutablePointer<yyjson_alc>?)
+               flag: JSON.WriteOptions, alc: UnsafeMutablePointer<yyjson_alc>?)
 throws {
   var error = yyjson_write_err()
   let succ = yyjson_write_file(path, doc, flag.rawValue, alc, &error)
@@ -83,7 +72,7 @@ throws {
 }
 
 func writeFile(path: UnsafePointer<Int8>, doc: UnsafeMutablePointer<yyjson_mut_doc>?,
-               flag: YYJSONEncoder.WriteFlags, alc: UnsafeMutablePointer<yyjson_alc>?)
+               flag: JSON.WriteOptions, alc: UnsafeMutablePointer<yyjson_alc>?)
 throws {
   var error = yyjson_write_err()
   let succ = yyjson_mut_write_file(path, doc, flag.rawValue, alc, &error)
@@ -94,9 +83,9 @@ throws {
 
 public struct YYJSONEncoder {
 
-  public var flag: WriteFlags
+  public var flag: JSON.WriteOptions
 
-  public init(flag: WriteFlags = .none) {
+  public init(flag: JSON.WriteOptions = .none) {
     self.flag = flag
   }
 

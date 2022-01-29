@@ -1,5 +1,6 @@
 import yyjson
 import Foundation
+import JSON
 
 public enum YYJSONDecodeError: Error, CustomStringConvertible {
   case yyjsonReadError(code: UInt32, message: String, position: Int)
@@ -26,7 +27,7 @@ public enum YYJSONDecodeError: Error, CustomStringConvertible {
 }
 
 func safeYYRead(dat: UnsafeMutablePointer<Int8>?, count: Int,
-                flag: YYJSONDecoder.ReadFlags, alc: UnsafeMutablePointer<yyjson_alc>?)
+                flag: JSON.ReadOptions, alc: UnsafeMutablePointer<yyjson_alc>?)
 throws -> UnsafeMutablePointer<yyjson_doc> {
   var error = yyjson_read_err()
   guard let doc = yyjson_read_opts(dat, count, flag.rawValue & ~YYJSON_READ_INSITU, alc, &error) else {
@@ -36,28 +37,14 @@ throws -> UnsafeMutablePointer<yyjson_doc> {
 }
 
 extension YYJSONDecoder {
-  public struct ReadFlags: OptionSet {
-    public var rawValue: UInt32
-
-    public init(rawValue: UInt32) {
-      self.rawValue = rawValue
-    }
-
-    public static let none = Self(rawValue: YYJSON_READ_NOFLAG)
-    public static let inSitu = Self(rawValue: YYJSON_READ_INSITU)
-    //    public static let fastFP = Self(rawValue: YYJSON_READ_FASTFP)
-    public static let stopWhenDone = Self(rawValue: YYJSON_READ_STOP_WHEN_DONE)
-    public static let allowTrailingCommas = Self(rawValue: YYJSON_READ_ALLOW_TRAILING_COMMAS)
-    public static let allowComments = Self(rawValue: YYJSON_READ_ALLOW_COMMENTS)
-    public static let allowInfAndNan = Self(rawValue: YYJSON_READ_ALLOW_INF_AND_NAN)
-  }
+  
 }
 
 public struct YYJSONDecoder {
 
-  public var flag: ReadFlags
+  public var flag: JSON.ReadOptions
 
-  public init(flag: ReadFlags = .none) {
+  public init(flag: JSON.ReadOptions = .none) {
     self.flag = flag
   }
 
