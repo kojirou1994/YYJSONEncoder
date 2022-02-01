@@ -12,6 +12,8 @@ public struct RawJSONValue {
 }
 
 public protocol JSONValueProtocol: CustomStringConvertible {
+  associatedtype Array where Array: Collection, Array.Element == Self
+  associatedtype Object where Object: Sequence, Object.Element == (key: Self, value: Self)
 
   var rawJSONValue: RawJSONValue { get }
 
@@ -20,9 +22,11 @@ public protocol JSONValueProtocol: CustomStringConvertible {
 
   // MARK: Array API
   subscript(index: Int) -> Self? { get }
+  var array: Array? { get }
 
   // MARK: Object API
   subscript(keyBuffer: UnsafeBufferPointer<CChar>) -> Self? { get }
+  var object: Object? { get }
 }
 
 public extension JSONValueProtocol {
@@ -195,6 +199,27 @@ public struct JSONValue {
 
 extension JSONValue: JSONValueProtocol {
 
+  public struct Array {
+    @usableFromInline
+    internal init(value: JSONValue) {
+      assert(value.isArray)
+      self.value = value
+    }
+
+    @usableFromInline
+    let value: JSONValue
+  }
+
+  public struct Object {
+    @usableFromInline
+    internal init(value: JSONValue) {
+      assert(value.isObject)
+      self.value = value
+    }
+
+    let value: JSONValue
+  }
+
   @inlinable
   public func value(withPointer pointer: String) -> JSONValue {
     .init(val: yyjson_get_pointer(rawJSONValue.valPtr, pointer), doc: doc)
@@ -206,16 +231,7 @@ extension JSONValue: JSONValueProtocol {
   }
 
   @inlinable
-  public subscript(keyBuffer: UnsafeBufferPointer<CChar>) -> JSONValue? {
-    yyjson_obj_getn(rawJSONValue.valPtr, keyBuffer.baseAddress, keyBuffer.count)
-      .map { .init(val: $0, doc: doc) }
-  }
-
-}
-public extension JSONValue {
-
-  @inlinable
-  var array: JSONValueArray? {
+  public var array: Array? {
     guard isArray else {
       return nil
     }
@@ -223,7 +239,13 @@ public extension JSONValue {
   }
 
   @inlinable
-  var object: JSONValueObject? {
+  public subscript(keyBuffer: UnsafeBufferPointer<CChar>) -> JSONValue? {
+    yyjson_obj_getn(rawJSONValue.valPtr, keyBuffer.baseAddress, keyBuffer.count)
+      .map { .init(val: $0, doc: doc) }
+  }
+
+  @inlinable
+  public var object: Object? {
     guard isObject else {
       return nil
     }
@@ -232,18 +254,7 @@ public extension JSONValue {
 
 }
 
-public struct JSONValueArray {
-  @usableFromInline
-  internal init(value: JSONValue) {
-    assert(value.isArray)
-    self.value = value
-  }
-
-  @usableFromInline
-  let value: JSONValue
-}
-
-extension JSONValueArray: Collection {
+extension JSONValue.Array: Collection {
   @inlinable
   public func index(after i: Int) -> Int {
     i + 1
@@ -301,17 +312,7 @@ extension JSONValueArray: Collection {
   }
 }
 
-public struct JSONValueObject {
-  @usableFromInline
-  internal init(value: JSONValue) {
-    assert(value.isObject)
-    self.value = value
-  }
-
-  let value: JSONValue
-}
-
-extension JSONValueObject: Sequence {
+extension JSONValue.Object: Sequence {
 
   public var count: Int {
     unsafe_yyjson_get_len(value.rawJSONValue.rawPtr)

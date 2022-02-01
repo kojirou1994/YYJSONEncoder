@@ -1,166 +1,113 @@
 import yyjson
 
+extension RawJSONValue {
+  @usableFromInline
+  var mutValPtr: UnsafeMutablePointer<yyjson_mut_val> {
+    rawPtr.assumingMemoryBound(to: yyjson_mut_val.self)
+  }
+}
+
 public struct MutableJSONValue {
-  let val: UnsafeMutablePointer<yyjson_mut_val>?
+  @usableFromInline
+  internal init(val: UnsafeMutablePointer<yyjson_mut_val>, doc: MutableJSON) {
+    self.rawJSONValue = .init(rawPtr: val)
+    self.doc = doc
+  }
+
+  public let rawJSONValue: RawJSONValue
+
+  @usableFromInline
   let doc: MutableJSON
 }
 
-public extension MutableJSONValue {
-  var exists: Bool {
-    val != nil
-  }
-
-  var isNull: Bool {
-    yyjson_mut_is_null(val)
-  }
-
-  var isTrue: Bool {
-    yyjson_mut_is_true(val)
-  }
-
-  var isFalse: Bool {
-    yyjson_mut_is_false(val)
-  }
-
-  var isBool: Bool {
-    yyjson_mut_is_bool(val)
-  }
-
-  var isUnsignedInteger: Bool {
-    yyjson_mut_is_uint(val)
-  }
-
-  var isSignedInteger: Bool {
-    yyjson_mut_is_sint(val)
-  }
-
-  var isInteger: Bool {
-    yyjson_mut_is_int(val)
-  }
-
-  var isDouble: Bool {
-    yyjson_mut_is_real(val)
-  }
-
-  var isNumber: Bool {
-    yyjson_mut_is_num(val)
-  }
-
-  var isString: Bool {
-    yyjson_mut_is_str(val)
-  }
-
-  var isArray: Bool {
-    yyjson_mut_is_arr(val)
-  }
-
-  var isObject: Bool {
-    yyjson_mut_is_obj(val)
-  }
-
-  var isContainer: Bool {
-    yyjson_mut_is_ctn(val)
-  }
-}
-
-public extension MutableJSONValue {
-
-  private func alertWrongType() {
-    if val != nil {
-      assertionFailure("Wrong Type! Real Type: \(String(cString: yyjson_mut_get_type_desc(val)))")
-    }
-  }
-
-  // MARK: Value API
-
-  var bool: Bool? {
-    guard isBool else {
-      alertWrongType()
-      return nil
-    }
-    return yyjson_mut_get_bool(val)
-  }
-
-  var uint: UInt64? {
-    guard isUnsignedInteger else {
-      alertWrongType()
-      return nil
-    }
-    return yyjson_mut_get_uint(val)
-  }
-
-  var int: Int64? {
-    guard isSignedInteger else {
-      alertWrongType()
-      return nil
-    }
-    return yyjson_mut_get_sint(val)
-  }
-
-  var double: Double? {
-    guard isDouble else {
-      alertWrongType()
-      return nil
-    }
-    return yyjson_mut_get_real(val)
-  }
-
-  var string: String? {
-    guard isString else {
-      alertWrongType()
-      return nil
-    }
-    return String(cString: yyjson_mut_get_str(val))
-  }
-
-  // MARK: Array API
-
-  subscript(index: Int) -> Self {
-    assert(isArray)
-    return .init(val: yyjson_mut_arr_get(val, index), doc: doc)
-  }
-
-  var array: MutableJSONValueArray? {
+extension MutableJSONValue: JSONValueProtocol {
+  public var array: Array? {
     guard isArray else {
-      alertWrongType()
       return nil
     }
-    return .init(array: self)
+    return .init(value: self)
   }
 
-  // MARK: Object API
-
-  subscript(key: String) -> Self {
-    assert(isObject)
-    return .init(val: yyjson_mut_obj_get(val, key), doc: doc)
-  }
-
-  var object: MutableJSONValueObject? {
+  public var object: Object? {
     guard isObject else {
-      alertWrongType()
       return nil
     }
-    return .init(object: self)
+    return .init(value: self)
   }
 
-  // MARK: MutableJSON Pointer
-
-  func get(pointer: String) -> MutableJSONValue {
-    .init(val: yyjson_mut_get_pointer(val, pointer), doc: doc)
+  public struct Array {
+    let value: MutableJSONValue
   }
+  public struct Object {
+    let value: MutableJSONValue
+  }
+
+  @inlinable
+  public func value(withPointer pointer: String) -> MutableJSONValue {
+    .init(val: yyjson_mut_get_pointer(rawJSONValue.mutValPtr, pointer), doc: doc)
+  }
+
+  @inlinable
+  public subscript(index: Int) -> MutableJSONValue? {
+    yyjson_mut_arr_get(rawJSONValue.mutValPtr, index).map { .init(val: $0, doc: doc) }
+  }
+
+  @inlinable
+  public subscript(keyBuffer: UnsafeBufferPointer<CChar>) -> MutableJSONValue? {
+    yyjson_mut_obj_getn(rawJSONValue.mutValPtr, keyBuffer.baseAddress, keyBuffer.count)
+      .map { .init(val: $0, doc: doc) }
+  }
+
 }
 
-public struct MutableJSONValueArray {
-  let array: MutableJSONValue
-}
 
-extension MutableJSONValueArray: Collection {
+extension MutableJSONValue.Array: RangeReplaceableCollection, MutableCollection, BidirectionalCollection {
+
+  public init() {
+    let doc = try! MutableJSON()
+    self = try! doc.array().array!
+  }
+
+  public func index(before i: Int) -> Int {
+    i - 1
+  }
+
   public func index(after i: Int) -> Int {
     i + 1
   }
 
+  public func insert(_ newElement: MutableJSONValue, at i: Int) {
+    checkSameDoc(newElement)
+    precondition(yyjson_mut_arr_insert(value.rawJSONValue.mutValPtr, newElement.rawJSONValue.mutValPtr, i))
+  }
+
+  public func append(_ newElement: MutableJSONValue) {
+    checkSameDoc(newElement)yyjson_mut_arr_add_obj
+    precondition(yyjson_mut_arr_append(value.rawJSONValue.mutValPtr, newElement.rawJSONValue.mutValPtr))
+  }
+
+  public func remove(at i: Int) -> MutableJSONValue {
+    .init(val: yyjson_mut_arr_remove(value.rawJSONValue.mutValPtr, i), doc: value.doc)
+  }
+
+  public func removeFirst() -> MutableJSONValue {
+    .init(val: yyjson_mut_arr_remove_first(value.rawJSONValue.mutValPtr), doc: value.doc)
+  }
+
+  public func removeLast() -> MutableJSONValue {
+    .init(val: yyjson_mut_arr_remove_last(value.rawJSONValue.mutValPtr), doc: value.doc)
+  }
+
+  public func removeAll(keepingCapacity keepCapacity: Bool) {
+    precondition(yyjson_mut_arr_clear(value.rawJSONValue.mutValPtr))
+  }
+
+  public func removeSubrange(_ bounds: Range<Int>) {
+    precondition(yyjson_mut_arr_remove_range(value.rawJSONValue.mutValPtr, bounds.lowerBound, bounds.upperBound))
+  }
+
   public var count: Int {
-    yyjson_mut_arr_size(array.val)
+    unsafe_yyjson_get_len(value.rawJSONValue.rawPtr)
   }
 
   public var startIndex: Int {
@@ -171,14 +118,27 @@ extension MutableJSONValueArray: Collection {
     count
   }
 
+  @usableFromInline
+  func checkSameDoc(_ v: MutableJSONValue) {
+    precondition(v.doc === value.doc)
+  }
+
   public subscript(position: Int) -> MutableJSONValue {
-    array[position]
+    get {
+      precondition(0..<count ~= position)
+      return .init(val: yyjson_mut_arr_get(value.rawJSONValue.mutValPtr, position), doc: value.doc)
+    }
+    set {
+      precondition(0..<count ~= position)
+      checkSameDoc(newValue)
+      precondition(yyjson_mut_arr_replace(value.rawJSONValue.mutValPtr, position, newValue.rawJSONValue.mutValPtr) != nil)
+    }
   }
 
   public func makeIterator() -> Iterator {
     var iter: yyjson_mut_arr_iter = .init()
-    yyjson_mut_arr_iter_init(array.val, &iter)
-    return .init(array: array, iter: iter)
+    yyjson_mut_arr_iter_init(value.rawJSONValue.mutValPtr, &iter)
+    return .init(array: value, iter: iter)
   }
 
   public struct Iterator: IteratorProtocol {
@@ -196,26 +156,22 @@ extension MutableJSONValueArray: Collection {
   }
 }
 
-public struct MutableJSONValueObject {
-  let object: MutableJSONValue
-}
-
-extension MutableJSONValueObject: Sequence {
+extension MutableJSONValue.Object: Sequence {
 
   public var count: Int {
-    yyjson_mut_obj_size(object.val)
+    unsafe_yyjson_get_len(value.rawJSONValue.rawPtr)
   }
 
   public var underestimatedCount: Int { count }
 
-  public subscript(key: String) -> MutableJSONValue {
-    object[key]
+  public subscript(key: String) -> MutableJSONValue? {
+    value[key]
   }
 
   public func makeIterator() -> Iterator {
     var iter: yyjson_mut_obj_iter = .init()
-    yyjson_mut_obj_iter_init(object.val, &iter)
-    return .init(object: object, iter: iter)
+    yyjson_mut_obj_iter_init(value.rawJSONValue.mutValPtr, &iter)
+    return .init(object: value, iter: iter)
   }
 
   public struct Iterator: IteratorProtocol {
