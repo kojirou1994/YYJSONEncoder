@@ -1,9 +1,21 @@
 import yyjson
-import Foundation
 
 public final class JSON {
   @usableFromInline
-  internal init(_ doc: UnsafeMutablePointer<yyjson_doc>) {
+  internal init(_ buffer: UnsafeRawBufferPointer, options: ReadOptions) throws {
+    var err = yyjson_read_err()
+    guard let doc = yyjson_read_opts(.init(OpaquePointer(buffer.baseAddress)), buffer.count, options.rawValue, nil, &err) else {
+      fatalError()
+    }
+    self.doc = doc
+  }
+
+  @usableFromInline
+  internal init(path: UnsafePointer<CChar>, options: ReadOptions) throws {
+    var err = yyjson_read_err()
+    guard let doc = yyjson_read_file(path, options.rawValue, nil, &err) else {
+      fatalError()
+    }
     self.doc = doc
   }
 
@@ -17,28 +29,15 @@ public final class JSON {
 
 public extension JSON {
 
-  @inlinable
-  static func read(buffer: Data, options: ReadOptions = .none) throws -> JSON {
-    buffer.withUnsafeBytes { buffer in
-        .init(yyjson_read(.init(OpaquePointer(buffer.baseAddress)), buffer.count, options.rawValue))
-    }!
-  }
-
-  static func read<T>(buffer: T, options: ReadOptions = .none) throws -> JSON where T: Collection, T.Element == UInt8 {
-    buffer.withContiguousStorageIfAvailable { buffer in
-        .init(yyjson_read(.init(OpaquePointer(buffer.baseAddress)), buffer.count, options.rawValue))
-    }!
-  }
-
   static func read(string: String, options: ReadOptions = .none) throws -> JSON {
     var copy = string
-    return copy.withUTF8 { buffer in
-        .init(yyjson_read(.init(OpaquePointer(buffer.baseAddress)), buffer.count, options.rawValue))
+    return try copy.withUTF8 { buffer in
+      try .init(.init(buffer), options: options)
     }
   }
 
   static func read(path: String, options: ReadOptions = .none) throws -> JSON {
-    .init(yyjson_read_file(path, options.rawValue, nil, nil))
+    try .init(path: path, options: options)
   }
 }
 
@@ -53,7 +52,7 @@ public extension JSON {
 
   @inlinable
   var root: JSONValue {
-    .init(val: yyjson_doc_get_root(doc), doc: self)
+    .init(val: doc.pointee.root, doc: self)
   }
 
 }

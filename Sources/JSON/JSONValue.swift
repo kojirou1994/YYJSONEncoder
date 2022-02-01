@@ -3,129 +3,154 @@ import yyjson
 public struct RawJSONValue {
 
   @usableFromInline
-  let val: UnsafeMutableRawPointer?
+  let rawPtr: UnsafeMutableRawPointer
+
+  @usableFromInline
+  var valPtr: UnsafeMutablePointer<yyjson_val> {
+    rawPtr.assumingMemoryBound(to: yyjson_val.self)
+  }
 }
 
 public protocol JSONValueProtocol {
   var rawJSONValue: RawJSONValue { get }
+
+  // MARK: JSON Pointer
+  func value(withPointer pointer: String) -> Self
 }
 
 public extension JSONValueProtocol {
 
-  private var ptr: UnsafeMutablePointer<yyjson_val>? {
-    rawJSONValue.val?.assumingMemoryBound(to: yyjson_val.self)
-  }
-
+  @inlinable
   var typeDescriptionCString: UnsafePointer<CChar> {
-    yyjson_get_type_desc(ptr)
+    yyjson_get_type_desc(rawJSONValue.valPtr)
   }
 
+  @inlinable
   var typeDescription: String {
     .init(cString: typeDescriptionCString)
   }
 
-  var exists: Bool {
-    rawJSONValue.val != nil
-  }
-
+  @inlinable
   var isNull: Bool {
-    yyjson_is_null(ptr)
+    unsafe_yyjson_is_null(rawJSONValue.rawPtr)
   }
 
+  @inlinable
   var isTrue: Bool {
-    yyjson_is_true(ptr)
+    unsafe_yyjson_is_true(rawJSONValue.rawPtr)
   }
 
+  @inlinable
   var isFalse: Bool {
-    yyjson_is_false(ptr)
+    unsafe_yyjson_is_false(rawJSONValue.rawPtr)
   }
 
+  @inlinable
   var isBool: Bool {
-    yyjson_is_bool(ptr)
+    unsafe_yyjson_is_bool(rawJSONValue.rawPtr)
   }
 
+  @inlinable
   var isUnsignedInteger: Bool {
-    yyjson_is_uint(ptr)
+    unsafe_yyjson_is_uint(rawJSONValue.rawPtr)
   }
 
+  @inlinable
   var isSignedInteger: Bool {
-    yyjson_is_sint(ptr)
+    unsafe_yyjson_is_sint(rawJSONValue.rawPtr)
   }
 
+  @inlinable
   var isInteger: Bool {
-    yyjson_is_int(ptr)
+    unsafe_yyjson_is_int(rawJSONValue.rawPtr)
   }
 
+  @inlinable
   var isDouble: Bool {
-    yyjson_is_real(ptr)
+    unsafe_yyjson_is_real(rawJSONValue.rawPtr)
   }
 
+  @inlinable
   var isNumber: Bool {
-    yyjson_is_num(ptr)
+    unsafe_yyjson_is_num(rawJSONValue.rawPtr)
   }
 
+  @inlinable
   var isString: Bool {
-    yyjson_is_str(ptr)
+    unsafe_yyjson_is_str(rawJSONValue.rawPtr)
   }
 
+  @inlinable
   var isArray: Bool {
-    yyjson_is_arr(ptr)
+    unsafe_yyjson_is_arr(rawJSONValue.rawPtr)
   }
 
+  @inlinable
   var isObject: Bool {
-    yyjson_is_obj(ptr)
+    unsafe_yyjson_is_obj(rawJSONValue.rawPtr)
   }
 
+  @inlinable
   var isContainer: Bool {
-    yyjson_is_ctn(ptr)
+    unsafe_yyjson_is_ctn(rawJSONValue.rawPtr)
   }
 
   // MARK: Value API
 
+  @inlinable
   var bool: Bool? {
     guard isBool else {
       return nil
     }
-    return unsafe_yyjson_get_bool(rawJSONValue.val)
+    return unsafe_yyjson_get_bool(rawJSONValue.rawPtr)
   }
 
+  @inlinable
   var uint: UInt64? {
     guard isUnsignedInteger else {
       return nil
     }
-    return unsafe_yyjson_get_uint(rawJSONValue.val)
+    return unsafe_yyjson_get_uint(rawJSONValue.rawPtr)
   }
 
+  @inlinable
   var int: Int64? {
     guard isSignedInteger else {
       return nil
     }
-    return unsafe_yyjson_get_sint(rawJSONValue.val)
+    return unsafe_yyjson_get_sint(rawJSONValue.rawPtr)
   }
 
+  @inlinable
   var double: Double? {
     guard isDouble else {
       return nil
     }
-    return unsafe_yyjson_get_real(rawJSONValue.val)
+    return unsafe_yyjson_get_real(rawJSONValue.rawPtr)
   }
 
+  @inlinable
   var cString: UnsafePointer<CChar>? {
     guard isString else {
       return nil
     }
-    return unsafe_yyjson_get_str(rawJSONValue.val)
+    return unsafe_yyjson_get_str(rawJSONValue.rawPtr)
   }
 
+  @inlinable
   var string: String? {
     cString.map(String.init)
   }
 }
 
 public struct JSONValue: JSONValueProtocol {
+  public func value(withPointer pointer: String) -> JSONValue {
+    .init(val: yyjson_get_pointer(rawJSONValue.valPtr, pointer), doc: doc)
+  }
+
   @usableFromInline
   internal init(val: UnsafeMutablePointer<yyjson_val>, doc: JSON) {
-    self.rawJSONValue = .init(val: val)
+    self.rawJSONValue = .init(rawPtr: val)
     self.doc = doc
   }
 
@@ -140,9 +165,8 @@ public extension JSONValue {
   // MARK: Array API
 
   @inlinable
-  subscript(index: Int) -> Self {
-    assert(isArray)
-    return .init(val: yyjson_arr_get(rawJSONValue.val?.assumingMemoryBound(to: yyjson_val.self), index), doc: doc)
+  subscript(index: Int) -> Self? {
+    yyjson_arr_get(rawJSONValue.valPtr, index).map { .init(val: $0, doc: doc) }
   }
 
   @inlinable
@@ -150,15 +174,14 @@ public extension JSONValue {
     guard isArray else {
       return nil
     }
-    return .init(array: self)
+    return .init(value: self)
   }
 
   // MARK: Object API
 
   @inlinable
-  subscript(key: String) -> Self {
-    assert(isObject)
-    return .init(val: yyjson_obj_get(rawJSONValue.val?.assumingMemoryBound(to: yyjson_val.self), key), doc: doc)
+  subscript(key: String) -> Self? {
+    yyjson_obj_get(rawJSONValue.valPtr, key).map { .init(val: $0, doc: doc) }
   }
 
   @inlinable
@@ -169,21 +192,16 @@ public extension JSONValue {
     return .init(object: self)
   }
 
-  // MARK: JSON Pointer
-
-  func get(pointer: String) -> JSONValue {
-    .init(val: yyjson_get_pointer(rawJSONValue.val?.assumingMemoryBound(to: yyjson_val.self), pointer), doc: doc)
-  }
 }
 
 public struct JSONValueArray {
   @usableFromInline
-  internal init(array: JSONValue) {
-    self.array = array
+  internal init(value: JSONValue) {
+    self.value = value
   }
 
   @usableFromInline
-  let array: JSONValue
+  let value: JSONValue
 }
 
 extension JSONValueArray: Collection {
@@ -194,7 +212,7 @@ extension JSONValueArray: Collection {
 
   @inlinable
   public var count: Int {
-    yyjson_arr_size(array.rawJSONValue.val?.assumingMemoryBound(to: yyjson_val.self))
+    unsafe_yyjson_get_len(value.rawJSONValue.rawPtr)
   }
 
   @inlinable
@@ -209,14 +227,15 @@ extension JSONValueArray: Collection {
 
   @inlinable
   public subscript(position: Int) -> JSONValue {
-    array[position]
+    precondition(0..<count ~= position)
+    return .init(val: yyjson_arr_get(value.rawJSONValue.valPtr, position), doc: value.doc)
   }
 
   @inlinable
   public func makeIterator() -> Iterator {
     var iter: yyjson_arr_iter = .init()
-    yyjson_arr_iter_init(array.rawJSONValue.val?.assumingMemoryBound(to: yyjson_val.self), &iter)
-    return .init(array: array, iter: iter)
+    yyjson_arr_iter_init(value.rawJSONValue.valPtr, &iter)
+    return .init(array: value, iter: iter)
   }
 
   public struct Iterator: IteratorProtocol {
@@ -255,18 +274,18 @@ public struct JSONValueObject {
 extension JSONValueObject: Sequence {
 
   public var count: Int {
-    yyjson_obj_size(object.rawJSONValue.val?.assumingMemoryBound(to: yyjson_val.self))
+    unsafe_yyjson_get_len(object.rawJSONValue.rawPtr)
   }
 
   public var underestimatedCount: Int { count }
 
-  public subscript(key: String) -> JSONValue {
+  public subscript(key: String) -> JSONValue? {
     object[key]
   }
 
   public func makeIterator() -> Iterator {
     var iter: yyjson_obj_iter = .init()
-    yyjson_obj_iter_init(object.rawJSONValue.val?.assumingMemoryBound(to: yyjson_val.self), &iter)
+    yyjson_obj_iter_init(object.rawJSONValue.valPtr, &iter)
     return .init(object: object, iter: iter)
   }
 
