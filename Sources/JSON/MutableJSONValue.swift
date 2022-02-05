@@ -82,7 +82,7 @@ extension MutableJSONValue.Array: RangeReplaceableCollection, MutableCollection,
   }
 
   public func append(_ newElement: MutableJSONValue) {
-    checkSameDoc(newElement)yyjson_mut_arr_add_obj
+    checkSameDoc(newElement)
     precondition(yyjson_mut_arr_append(value.rawJSONValue.mutValPtr, newElement.rawJSONValue.mutValPtr))
   }
 

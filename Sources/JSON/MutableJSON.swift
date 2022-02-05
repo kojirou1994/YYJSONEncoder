@@ -110,16 +110,11 @@ public extension MutableJSON {
 
   var root: MutableJSONValue {
     get {
-      .init(val: doc.pointee.root, doc: self)
+      .init(val: yyjson_mut_doc_get_root(doc), doc: self)
     }
     set {
-      doc.pointee.root = newValue.rawJSONValue.mutValPtr
+      yyjson_mut_doc_set_root(doc, newValue.rawJSONValue.mutValPtr)
     }
-  }
-
-  private func a() {
-    yyjson_mut_doc_set_root(doc, nil)
-
   }
 
   func copy(value: JSONValue) throws -> MutableJSONValue {

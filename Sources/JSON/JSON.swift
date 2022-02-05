@@ -5,7 +5,7 @@ public final class JSON {
   internal init(_ buffer: UnsafeRawBufferPointer, options: ReadOptions) throws {
     var err = yyjson_read_err()
     guard let doc = yyjson_read_opts(.init(OpaquePointer(buffer.baseAddress)), buffer.count, options.rawValue, nil, &err) else {
-      fatalError()
+      throw JSONReadError(err: err)
     }
     self.doc = doc
   }
@@ -14,7 +14,7 @@ public final class JSON {
   internal init(path: UnsafePointer<CChar>, options: ReadOptions) throws {
     var err = yyjson_read_err()
     guard let doc = yyjson_read_file(path, options.rawValue, nil, &err) else {
-      fatalError()
+      throw JSONReadError(err: err)
     }
     self.doc = doc
   }

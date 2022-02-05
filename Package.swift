@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
   name: "YYJSONEncoder",
   products: [
-//    .library(name: "YYJSONEncoder", targets: ["YYJSONEncoder"]),
+    .library(name: "YYJSONEncoder", targets: ["YYJSONEncoder"]),
     .library(name: "JSON", targets: ["JSON"]),
   ],
   dependencies: [
