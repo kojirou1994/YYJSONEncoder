@@ -25,6 +25,16 @@ let package = Package(
         "yyjson",
         "JSON",
       ]),
+    .target(
+      name: "ExecC",
+      dependencies: [
+        "yyjson",
+      ]),
+    .target(
+      name: "ExecSwift",
+      dependencies: [
+        "JSON",
+      ]),
     .testTarget(
       name: "JSONTests",
       dependencies: ["JSON"]),
