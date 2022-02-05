@@ -30,8 +30,7 @@ public final class JSON {
 public extension JSON {
 
   static func read(string: String, options: ReadOptions = .none) throws -> JSON {
-    var copy = string
-    return try copy.withUTF8 { buffer in
+    try string.utf8.withContiguousBuffer { buffer in
       try .init(.init(buffer), options: options)
     }
   }
@@ -42,10 +41,12 @@ public extension JSON {
 }
 
 public extension JSON {
+  @inlinable
   var readSize: Int {
     yyjson_doc_get_read_size(doc)
   }
 
+  @inlinable
   var valueCount: Int {
     yyjson_doc_get_val_count(doc)
   }
