@@ -2,6 +2,15 @@
   "object": {
     "pins": [
       {
+        "package": "Precondition",
+        "repositoryURL": "https://github.com/kojirou1994/Precondition.git",
+        "state": {
+          "branch": null,
+          "revision": "8bfd454560f5bfafe9bf0db3e929ef65ba189400",
+          "version": "1.0.0"
+        }
+      },
+      {
         "package": "yyjson",
         "repositoryURL": "https://github.com/ibireme/yyjson.git",
         "state": {

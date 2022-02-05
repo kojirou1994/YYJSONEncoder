@@ -10,11 +10,15 @@ let package = Package(
   ],
   dependencies: [
     .package(url: "https://github.com/ibireme/yyjson.git", .upToNextMajor(from: "0.2.0")),
+    .package(url: "https://github.com/kojirou1994/Precondition.git", .upToNextMajor(from: "1.0.0")),
   ],
   targets: [
     .target(
       name: "JSON",
-      dependencies: ["yyjson"]),
+      dependencies: [
+        "yyjson",
+        "Precondition",
+      ]),
     .target(
       name: "YYJSONEncoder",
       dependencies: [

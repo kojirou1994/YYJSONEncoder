@@ -1,5 +1,9 @@
 import yyjson
 
+public enum JSONError: Error {
+  case noMemory
+}
+
 public struct JSONReadError: Error {
   internal init(err: yyjson_read_err) {
     self.err = err

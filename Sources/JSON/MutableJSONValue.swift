@@ -120,7 +120,7 @@ extension MutableJSONValue.Array: RangeReplaceableCollection, MutableCollection,
 
   @usableFromInline
   func checkSameDoc(_ v: MutableJSONValue) {
-    precondition(v.doc === value.doc)
+    assert(v.doc === value.doc)
   }
 
   public subscript(position: Int) -> MutableJSONValue {

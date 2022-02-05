@@ -53,7 +53,7 @@ public extension JSON {
 
   @inlinable
   var root: JSONValue {
-    .init(val: doc.pointee.root, doc: self)
+    .init(val: yyjson_doc_get_root(doc), doc: self)
   }
 
 }
