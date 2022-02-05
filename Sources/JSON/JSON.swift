@@ -1,22 +1,23 @@
 import yyjson
+import Precondition
 
 public final class JSON {
   @usableFromInline
-  internal init(_ buffer: UnsafeRawBufferPointer, options: ReadOptions) throws {
+  internal init(_ buffer: UnsafeRawBufferPointer, options: ReadOptions, allocator: JSONAllocator?) throws {
     var err = yyjson_read_err()
-    guard let doc = yyjson_read_opts(.init(OpaquePointer(buffer.baseAddress)), buffer.count, options.rawValue, nil, &err) else {
-      throw JSONReadError(err: err)
+    let doc = withOptionalAllocatorPointer(to: allocator) { allocator in
+      yyjson_read_opts(.init(OpaquePointer(buffer.baseAddress)), buffer.count, options.rawValue, allocator, &err)
     }
-    self.doc = doc
+    self.doc = try doc.unwrap(JSONReadError(err))
   }
 
   @usableFromInline
-  internal init(path: UnsafePointer<CChar>, options: ReadOptions) throws {
+  internal init(path: UnsafePointer<CChar>, options: ReadOptions, allocator: JSONAllocator?) throws {
     var err = yyjson_read_err()
-    guard let doc = yyjson_read_file(path, options.rawValue, nil, &err) else {
-      throw JSONReadError(err: err)
+    let doc = withOptionalAllocatorPointer(to: allocator) { allocator in
+      yyjson_read_file(path, options.rawValue, allocator, &err)
     }
-    self.doc = doc
+    self.doc = try doc.unwrap(JSONReadError(err))
   }
 
   @usableFromInline
@@ -29,14 +30,16 @@ public final class JSON {
 
 public extension JSON {
 
-  static func read(string: String, options: ReadOptions = .none) throws -> JSON {
+  @inlinable
+  static func read<T: StringProtocol>(string: T, options: ReadOptions = .none, allocator: JSONAllocator? = nil) throws -> JSON {
     try string.utf8.withContiguousBuffer { buffer in
-      try .init(.init(buffer), options: options)
+      try .init(.init(buffer), options: options, allocator: allocator)
     }
   }
 
-  static func read(path: String, options: ReadOptions = .none) throws -> JSON {
-    try .init(path: path, options: options)
+  @inlinable
+  static func read(path: String, options: ReadOptions = .none, allocator: JSONAllocator? = nil) throws -> JSON {
+    try .init(path: path, options: options, allocator: allocator)
   }
 }
 

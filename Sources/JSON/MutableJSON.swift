@@ -2,14 +2,19 @@ import yyjson
 import Precondition
 
 public final class MutableJSON {
+  @usableFromInline
   internal init(_ doc: UnsafeMutablePointer<yyjson_mut_doc>) {
     self.doc = doc
   }
 
-  public init() throws {
-    doc = try yyjson_mut_doc_new(nil).unwrap(JSONError.noMemory)
+  @inlinable
+  public init(allocator: JSONAllocator? = nil) throws {
+    doc = try withOptionalAllocatorPointer(to: allocator) { allocator in
+      try yyjson_mut_doc_new(allocator).unwrap(JSONError.noMemory)
+    }
   }
 
+  @usableFromInline
   let doc: UnsafeMutablePointer<yyjson_mut_doc>
 
   deinit {
@@ -109,6 +114,7 @@ public extension MutableJSON {
 
 public extension MutableJSON {
 
+  @inlinable
   var root: MutableJSONValue {
     get {
       .init(val: yyjson_mut_doc_get_root(doc), doc: self)
@@ -119,6 +125,7 @@ public extension MutableJSON {
     }
   }
 
+  @inlinable
   func copy(value: JSONValue) throws -> MutableJSONValue {
     .init(val: try yyjson_val_mut_copy(doc, value.rawJSONValue.valPtr).unwrap(JSONError.noMemory), doc: self)
   }
@@ -126,7 +133,10 @@ public extension MutableJSON {
 }
 
 public extension JSON {
-  func copyMutable() throws -> MutableJSON {
-    .init(try yyjson_doc_mut_copy(doc, nil).unwrap(JSONError.noMemory))
+  @inlinable
+  func copyMutable(allocator: JSONAllocator? = nil) throws -> MutableJSON {
+    try withOptionalAllocatorPointer(to: allocator) { allocator in
+      try MutableJSON(yyjson_doc_mut_copy(doc, allocator).unwrap(JSONError.noMemory))
+    }
   }
 }

@@ -2,10 +2,12 @@ import yyjson
 
 public enum JSONError: Error {
   case noMemory
+  case bufferTooSmall
 }
 
 public struct JSONReadError: Error {
-  internal init(err: yyjson_read_err) {
+  @usableFromInline
+  internal init(_ err: yyjson_read_err) {
     self.err = err
     assert(code != .success)
   }
@@ -46,7 +48,8 @@ public extension JSONReadError.Code {
 }
 
 public struct JSONWriteError: Error {
-  internal init(err: yyjson_write_err) {
+  @usableFromInline
+  internal init(_ err: yyjson_write_err) {
     self.err = err
     assert(code != .success)
   }
