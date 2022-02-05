@@ -65,6 +65,7 @@ extension JSON {
   public struct ReadOptions: OptionSet {
     public var rawValue: UInt32
 
+    @_alwaysEmitIntoClient
     public init(rawValue: UInt32) {
       self.rawValue = rawValue
     }
@@ -86,9 +87,11 @@ extension JSON {
   public struct WriteOptions: OptionSet {
     public var rawValue: UInt32
 
+    @_alwaysEmitIntoClient
     public init(rawValue: UInt32) {
       self.rawValue = rawValue
     }
+
     @_alwaysEmitIntoClient
     public static var none: Self { .init(rawValue: YYJSON_WRITE_NOFLAG) }
     @_alwaysEmitIntoClient

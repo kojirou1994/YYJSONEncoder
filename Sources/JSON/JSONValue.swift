@@ -31,84 +31,84 @@ public protocol JSONValueProtocol: CustomStringConvertible {
 
 public extension JSONValueProtocol {
 
-  @inlinable
+  @_alwaysEmitIntoClient
   var typeDescriptionCString: UnsafePointer<CChar> {
     yyjson_get_type_desc(rawJSONValue.valPtr)
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   var typeDescription: String {
     .init(cString: typeDescriptionCString)
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   var isNull: Bool {
     unsafe_yyjson_is_null(rawJSONValue.rawPtr)
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   var isTrue: Bool {
     unsafe_yyjson_is_true(rawJSONValue.rawPtr)
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   var isFalse: Bool {
     unsafe_yyjson_is_false(rawJSONValue.rawPtr)
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   var isBool: Bool {
     unsafe_yyjson_is_bool(rawJSONValue.rawPtr)
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   var isUnsignedInteger: Bool {
     unsafe_yyjson_is_uint(rawJSONValue.rawPtr)
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   var isSignedInteger: Bool {
     unsafe_yyjson_is_sint(rawJSONValue.rawPtr)
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   var isInteger: Bool {
     unsafe_yyjson_is_int(rawJSONValue.rawPtr)
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   var isDouble: Bool {
     unsafe_yyjson_is_real(rawJSONValue.rawPtr)
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   var isNumber: Bool {
     unsafe_yyjson_is_num(rawJSONValue.rawPtr)
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   var isString: Bool {
     unsafe_yyjson_is_str(rawJSONValue.rawPtr)
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   var isArray: Bool {
     unsafe_yyjson_is_arr(rawJSONValue.rawPtr)
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   var isObject: Bool {
     unsafe_yyjson_is_obj(rawJSONValue.rawPtr)
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   var isContainer: Bool {
     unsafe_yyjson_is_ctn(rawJSONValue.rawPtr)
   }
 
   // MARK: Value API
 
-  @inlinable
+  @_alwaysEmitIntoClient
   var bool: Bool? {
     guard isBool else {
       return nil
@@ -116,7 +116,7 @@ public extension JSONValueProtocol {
     return unsafe_yyjson_get_bool(rawJSONValue.rawPtr)
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   var uint: UInt64? {
     guard isUnsignedInteger else {
       return nil
@@ -124,7 +124,7 @@ public extension JSONValueProtocol {
     return unsafe_yyjson_get_uint(rawJSONValue.rawPtr)
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   var int: Int64? {
     guard isSignedInteger else {
       return nil
@@ -132,7 +132,7 @@ public extension JSONValueProtocol {
     return unsafe_yyjson_get_sint(rawJSONValue.rawPtr)
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   var double: Double? {
     guard isDouble else {
       return nil
@@ -140,7 +140,7 @@ public extension JSONValueProtocol {
     return unsafe_yyjson_get_real(rawJSONValue.rawPtr)
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   var cString: UnsafePointer<CChar>? {
     guard isString else {
       return nil
@@ -148,12 +148,12 @@ public extension JSONValueProtocol {
     return unsafe_yyjson_get_str(rawJSONValue.rawPtr)
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   var string: String? {
     cString.map(String.init)
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   subscript<T: StringProtocol>(key: T) -> Self? {
     key.utf8.withContiguousBuffer { buffer in
       self[.init(start: .init(OpaquePointer(buffer.baseAddress)), count: buffer.count)]
@@ -217,20 +217,21 @@ extension JSONValue: JSONValueProtocol {
       self.value = value
     }
 
+    @usableFromInline
     let value: JSONValue
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   public func value(withPointer pointer: String) -> JSONValue {
     .init(val: yyjson_get_pointer(rawJSONValue.valPtr, pointer), doc: doc)
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   public subscript(index: Int) -> JSONValue? {
     yyjson_arr_get(rawJSONValue.valPtr, index).map { .init(val: $0, doc: doc) }
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   public var array: Array? {
     guard isArray else {
       return nil
@@ -238,13 +239,13 @@ extension JSONValue: JSONValueProtocol {
     return .init(value: self)
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   public subscript(keyBuffer: UnsafeBufferPointer<CChar>) -> JSONValue? {
     yyjson_obj_getn(rawJSONValue.valPtr, keyBuffer.baseAddress, keyBuffer.count)
       .map { .init(val: $0, doc: doc) }
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   public var object: Object? {
     guard isObject else {
       return nil
@@ -314,16 +315,20 @@ extension JSONValue.Array: Collection {
 
 extension JSONValue.Object: Sequence {
 
+  @inlinable
   public var count: Int {
     unsafe_yyjson_get_len(value.rawJSONValue.rawPtr)
   }
 
+  @inlinable
   public var underestimatedCount: Int { count }
 
+  @inlinable
   public subscript(key: String) -> JSONValue? {
     value[key]
   }
 
+  @inlinable
   public func makeIterator() -> Iterator {
     var iter: yyjson_obj_iter = .init()
     yyjson_obj_iter_init(value.rawJSONValue.valPtr, &iter)
@@ -331,10 +336,19 @@ extension JSONValue.Object: Sequence {
   }
 
   public struct Iterator: IteratorProtocol {
+    @usableFromInline
+    internal init(object: JSONValue, iter: yyjson_obj_iter) {
+      self.object = object
+      self.iter = iter
+    }
 
+    @usableFromInline
     let object: JSONValue
+
+    @usableFromInline
     var iter: yyjson_obj_iter
 
+    @inlinable
     public mutating func next() -> (key: JSONValue, value: JSONValue)? {
       if let keyPtr = yyjson_obj_iter_next(&iter) {
         let key = JSONValue(val: keyPtr, doc: object.doc)

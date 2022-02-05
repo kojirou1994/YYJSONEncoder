@@ -7,7 +7,7 @@ public protocol JSONWriter {
 }
 
 extension JSONWriter {
-  @inlinable
+  @_alwaysEmitIntoClient
   func write(options: JSON.WriteOptions) throws -> String {
     var length = 0
     let str = try write(options: options, length: &length, allocator: nil)
@@ -19,7 +19,7 @@ extension JSONWriter {
 }
 
 extension JSON: JSONWriter {
-  @inlinable
+  @_alwaysEmitIntoClient
   public func write(options: WriteOptions, length: UnsafeMutablePointer<Int>?, allocator: JSONAllocator?) throws -> UnsafeMutablePointer<CChar> {
     var err = yyjson_write_err()
     let str = withOptionalAllocatorPointer(to: allocator) { allocator in
@@ -28,7 +28,7 @@ extension JSON: JSONWriter {
     return try str.unwrap(JSONWriteError(err))
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   public func write(toFile path: UnsafePointer<CChar>, options: WriteOptions, length: UnsafeMutablePointer<Int>?, allocator: JSONAllocator?) throws {
     var err = yyjson_write_err()
     let succ = withOptionalAllocatorPointer(to: allocator) { allocator in
@@ -41,7 +41,7 @@ extension JSON: JSONWriter {
 }
 
 extension MutableJSON: JSONWriter {
-  @inlinable
+  @_alwaysEmitIntoClient
   public func write(options: JSON.WriteOptions, length: UnsafeMutablePointer<Int>?, allocator: JSONAllocator?) throws -> UnsafeMutablePointer<CChar> {
     var err = yyjson_write_err()
     let str = withOptionalAllocatorPointer(to: allocator) { allocator in
@@ -50,7 +50,7 @@ extension MutableJSON: JSONWriter {
     return try str.unwrap(JSONWriteError(err))
   }
 
-  @inlinable
+  @_alwaysEmitIntoClient
   public func write(toFile path: UnsafePointer<CChar>, options: JSON.WriteOptions, length: UnsafeMutablePointer<Int>?, allocator: JSONAllocator?) throws {
     var err = yyjson_write_err()
     let succ = withOptionalAllocatorPointer(to: allocator) { allocator in

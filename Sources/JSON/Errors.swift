@@ -12,21 +12,25 @@ public struct JSONReadError: Error {
     assert(code != .success)
   }
 
+  @usableFromInline
   let err: yyjson_read_err
 }
 
 public extension JSONReadError {
   /// Error code
+  @inlinable
   var code: Code {
     .init(rawValue: err.code)
   }
 
   /// Short error message
+  @inlinable
   var message: UnsafePointer<CChar> {
     err.msg
   }
 
   /// Error byte position for input data (0 for success)
+  @inlinable
   var position: Int {
     err.pos
   }
@@ -54,16 +58,25 @@ public struct JSONWriteError: Error {
     assert(code != .success)
   }
 
+  @usableFromInline
   let err: yyjson_write_err
+}
+
+extension JSONWriteError: CustomStringConvertible {
+  public var description: String {
+    "JSONWriteError(code: \(code), message: \(String(cString: message))"
+  }
 }
 
 public extension JSONWriteError {
   /// Error code
+  @inlinable
   var code: Code {
     .init(rawValue: err.code)
   }
 
   /// Short error message
+  @inlinable
   var message: UnsafePointer<CChar> {
     err.msg
   }
