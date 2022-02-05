@@ -5,6 +5,18 @@ public protocol JSONWriter {
   func write(toFile path: UnsafePointer<CChar>, options: JSON.WriteOptions, length: UnsafeMutablePointer<Int>?) throws
 }
 
+extension JSONWriter {
+  @inlinable
+  func write(options: JSON.WriteOptions) throws -> String {
+    var length = 0
+    let str = try write(options: options, length: &length)
+    defer {
+      free(str)
+    }
+    return String(decoding: UnsafeRawBufferPointer(UnsafeMutableBufferPointer.init(start: str, count: length)), as: UTF8.self)
+  }
+}
+
 extension JSON: JSONWriter {
   public func write(options: WriteOptions, length: UnsafeMutablePointer<Int>?) throws -> UnsafeMutablePointer<CChar> {
     var err = yyjson_write_err()
