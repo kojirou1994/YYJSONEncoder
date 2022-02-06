@@ -2,6 +2,7 @@ import yyjson
 import Precondition
 
 public struct JSONAllocator {
+  @usableFromInline
   internal let alc: yyjson_alc
 
   public init(malloc: @escaping @convention(c) (UnsafeMutableRawPointer?, Int) -> UnsafeMutableRawPointer?, realloc: @escaping @convention(c) (UnsafeMutableRawPointer?, UnsafeMutableRawPointer?, Int) -> UnsafeMutableRawPointer?, free: @escaping @convention(c) (UnsafeMutableRawPointer?, UnsafeMutableRawPointer?) -> Void, context: UnsafeMutableRawPointer?) {
@@ -39,7 +40,7 @@ public extension JSONAllocator {
   }
 }
 
-@usableFromInline
+@inlinable
 func withOptionalAllocatorPointer<Result>(to value: JSONAllocator?, _ body: (_ allocator: UnsafePointer<yyjson_alc>?) throws -> Result) rethrows -> Result {
   if let value = value {
     return try withUnsafePointer(to: value.alc, body)
