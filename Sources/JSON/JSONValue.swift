@@ -303,6 +303,11 @@ extension JSONValue.Array: Collection {
     var iter: yyjson_arr_iter
 
     @inlinable
+    public var hasNext: Bool {
+      iter.idx < iter.max
+    }
+
+    @inlinable
     public mutating func next() -> JSONValue? {
       if let val = yyjson_arr_iter_next(&iter) {
         return .init(val: val, doc: array.doc)
