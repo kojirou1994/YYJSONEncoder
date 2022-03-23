@@ -6,7 +6,7 @@ public enum JSONError: Error {
 }
 
 public struct JSONReadError: Error {
-  @_alwaysEmitIntoClient
+  @inlinable
   internal init(_ err: yyjson_read_err) {
     self.err = err
     assert(code != .success)
@@ -18,19 +18,16 @@ public struct JSONReadError: Error {
 
 public extension JSONReadError {
   /// Error code
-  @_alwaysEmitIntoClient
   var code: Code {
     .init(rawValue: err.code)
   }
 
   /// Short error message
-  @_alwaysEmitIntoClient
   var message: UnsafePointer<CChar> {
     err.msg
   }
 
   /// Error byte position for input data (0 for success)
-  @_alwaysEmitIntoClient
   var position: Int {
     err.pos
   }
@@ -38,10 +35,9 @@ public extension JSONReadError {
 
 extension JSONReadError {
   public struct Code: RawRepresentable {
-    @_alwaysEmitIntoClient
     public var rawValue: yyjson_read_code
 
-    @_alwaysEmitIntoClient
+    @inlinable
     public init(rawValue: yyjson_read_code) {
       self.rawValue = rawValue
     }
@@ -54,7 +50,7 @@ public extension JSONReadError.Code {
 }
 
 public struct JSONWriteError: Error {
-  @_alwaysEmitIntoClient
+  @inlinable
   internal init(_ err: yyjson_write_err) {
     self.err = err
     assert(code != .success)
@@ -72,13 +68,11 @@ extension JSONWriteError: CustomStringConvertible {
 
 public extension JSONWriteError {
   /// Error code
-  @_alwaysEmitIntoClient
   var code: Code {
     .init(rawValue: err.code)
   }
 
   /// Short error message
-  @_alwaysEmitIntoClient
   var message: UnsafePointer<CChar> {
     err.msg
   }
@@ -87,10 +81,10 @@ public extension JSONWriteError {
 
 extension JSONWriteError {
   public struct Code: RawRepresentable {
-    @_alwaysEmitIntoClient
+
     public var rawValue: yyjson_write_code
 
-    @_alwaysEmitIntoClient
+    @inlinable
     public init(rawValue: yyjson_write_code) {
       self.rawValue = rawValue
     }

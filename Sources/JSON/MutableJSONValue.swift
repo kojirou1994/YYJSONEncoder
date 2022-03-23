@@ -22,7 +22,7 @@ public struct MutableJSONValue {
 
 extension MutableJSONValue: JSONValueProtocol {
 
-  @_alwaysEmitIntoClient
+  @inlinable
   public var array: Array? {
     guard isArray else {
       return nil
@@ -30,7 +30,7 @@ extension MutableJSONValue: JSONValueProtocol {
     return .init(value: self)
   }
 
-  @_alwaysEmitIntoClient
+  @inlinable
   public var object: Object? {
     guard isObject else {
       return nil
@@ -59,17 +59,17 @@ extension MutableJSONValue: JSONValueProtocol {
     let value: MutableJSONValue
   }
 
-  @_alwaysEmitIntoClient
+  @inlinable
   public func value(withPointer pointer: String) -> MutableJSONValue {
     .init(val: yyjson_mut_get_pointer(rawJSONValue.mutValPtr, pointer), doc: doc)
   }
 
-  @_alwaysEmitIntoClient
+  @inlinable
   public subscript(index: Int) -> MutableJSONValue? {
     yyjson_mut_arr_get(rawJSONValue.mutValPtr, index).map { .init(val: $0, doc: doc) }
   }
 
-  @_alwaysEmitIntoClient
+  @inlinable
   public subscript(keyBuffer: UnsafeBufferPointer<CChar>) -> MutableJSONValue? {
     yyjson_mut_obj_getn(rawJSONValue.mutValPtr, keyBuffer.baseAddress, keyBuffer.count)
       .map { .init(val: $0, doc: doc) }

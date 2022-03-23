@@ -6,8 +6,8 @@ public protocol JSONWriter {
   func write(toFile path: UnsafePointer<CChar>, options: JSON.WriteOptions, length: UnsafeMutablePointer<Int>?, allocator: JSONAllocator?) throws
 }
 
-extension JSONWriter {
-  @_alwaysEmitIntoClient
+public extension JSONWriter {
+  @inlinable
   func write(options: JSON.WriteOptions) throws -> String {
     var length = 0
     let str = try write(options: options, length: &length, allocator: nil)
