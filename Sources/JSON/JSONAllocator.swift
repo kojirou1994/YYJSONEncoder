@@ -23,18 +23,22 @@ public struct JSONAllocator {
 
 public extension JSONAllocator {
 
+  @inlinable
   var malloc: (UnsafeMutableRawPointer?, Int) -> UnsafeMutableRawPointer? {
     alc.malloc
   }
 
+  @inlinable
   var realloc: (UnsafeMutableRawPointer?, UnsafeMutableRawPointer?, Int) -> UnsafeMutableRawPointer? {
     alc.realloc
   }
 
+  @inlinable
   var free: (UnsafeMutableRawPointer?, UnsafeMutableRawPointer?) -> Void {
     alc.free
   }
 
+  @inlinable
   var context: UnsafeMutableRawPointer? {
     alc.ctx
   }

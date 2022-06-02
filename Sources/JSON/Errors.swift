@@ -1,4 +1,5 @@
 import yyjson
+import CUtility
 
 public enum JSONError: Error {
   case noMemory
@@ -19,16 +20,19 @@ public struct JSONReadError: Error {
 
 public extension JSONReadError {
   /// Error code
+  @inlinable
   var code: Code {
     .init(rawValue: err.code)
   }
 
   /// Short error message
-  var message: UnsafePointer<CChar> {
-    err.msg
+  @inlinable
+  var message: StaticCString {
+    .init(cString: err.msg)
   }
 
   /// Error byte position for input data (0 for success)
+  @inlinable
   var position: Int {
     err.pos
   }
@@ -63,19 +67,21 @@ public struct JSONWriteError: Error {
 
 extension JSONWriteError: CustomStringConvertible {
   public var description: String {
-    "JSONWriteError(code: \(code), message: \(String(cString: message))"
+    "JSONWriteError(code: \(code), message: \(message.string)"
   }
 }
 
 public extension JSONWriteError {
   /// Error code
+  @inlinable
   var code: Code {
     .init(rawValue: err.code)
   }
 
   /// Short error message
-  var message: UnsafePointer<CChar> {
-    err.msg
+  @inlinable
+  var message: StaticCString {
+    .init(cString: err.msg)
   }
 
 }
