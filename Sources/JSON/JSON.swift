@@ -63,8 +63,8 @@ public extension JSON {
   }
 
   @inlinable
-  var root: JSONValue {
-    .init(val: yyjson_doc_get_root(doc), doc: self)
+  var root: JSONValue? {
+    yyjson_doc_get_root(doc).map { JSONValue(val: $0, doc: self) }
   }
 
 }

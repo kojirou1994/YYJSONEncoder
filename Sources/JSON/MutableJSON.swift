@@ -136,13 +136,13 @@ public extension MutableJSON {
 public extension MutableJSON {
 
   @inlinable
-  var root: MutableJSONValue {
+  var root: MutableJSONValue? {
     get {
-      .init(val: yyjson_mut_doc_get_root(doc), doc: self)
+      yyjson_mut_doc_get_root(doc).map { MutableJSONValue(val: $0, doc: self) }
     }
     set {
-      assert(newValue.doc === self)
-      yyjson_mut_doc_set_root(doc, newValue.rawJSONValue.mutValPtr)
+      assert(newValue == nil || newValue?.doc === self)
+      yyjson_mut_doc_set_root(doc, newValue?.rawJSONValue.mutValPtr)
     }
   }
 
