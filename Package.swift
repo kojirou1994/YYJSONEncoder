@@ -1,4 +1,4 @@
-// swift-tools-version:5.0
+// swift-tools-version: 5.6
 
 import PackageDescription
 
@@ -10,13 +10,15 @@ let package = Package(
   dependencies: [
     .package(url: "https://github.com/ibireme/yyjson.git", .upToNextMajor(from: "0.2.0")),
     .package(url: "https://github.com/kojirou1994/Precondition.git", .upToNextMajor(from: "1.0.0")),
+    .package(url: "https://github.com/kojirou1994/CUtility.git", .upToNextMajor(from: "0.0.1")),
   ],
   targets: [
     .target(
       name: "JSON",
       dependencies: [
-        "yyjson",
-        "Precondition",
+        .product(name: "yyjson", package: "yyjson"),
+        .product(name: "Precondition", package: "Precondition"),
+        .product(name: "CUtility", package: "CUtility"),
       ]),
     .target(
       name: "YYJSONEncoder",
@@ -24,12 +26,12 @@ let package = Package(
         "yyjson",
         "JSON",
       ]),
-    .target(
+    .executableTarget(
       name: "ExecC",
       dependencies: [
         "yyjson",
       ]),
-    .target(
+    .executableTarget(
       name: "ExecSwift",
       dependencies: [
         "JSON",

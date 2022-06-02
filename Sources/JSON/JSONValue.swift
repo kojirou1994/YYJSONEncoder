@@ -1,4 +1,5 @@
 import yyjson
+import CUtility
 
 public struct RawJSONValue {
 
@@ -32,13 +33,8 @@ public protocol JSONValueProtocol: CustomStringConvertible, Equatable {
 public extension JSONValueProtocol {
 
   @inlinable
-  var typeDescriptionCString: UnsafePointer<CChar> {
-    yyjson_get_type_desc(rawJSONValue.valPtr)
-  }
-
-  @inlinable
-  var typeDescription: String {
-    .init(cString: typeDescriptionCString)
+  var typeDescription: StaticCString {
+    .init(cString: yyjson_get_type_desc(rawJSONValue.valPtr))
   }
 
   @inlinable
