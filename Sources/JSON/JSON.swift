@@ -90,6 +90,10 @@ extension JSON {
     public static var allowComments: Self { .init(rawValue: YYJSON_READ_ALLOW_COMMENTS) }
     @_alwaysEmitIntoClient
     public static var allowInfAndNan: Self { .init(rawValue: YYJSON_READ_ALLOW_INF_AND_NAN) }
+    @_alwaysEmitIntoClient
+    public static var numberAsRaw: Self { .init(rawValue: YYJSON_READ_NUMBER_AS_RAW) }
+    @_alwaysEmitIntoClient
+    public static var allowInvalidUnicode: Self { .init(rawValue: YYJSON_READ_ALLOW_INVALID_UNICODE) }
   }
 
   public struct WriteOptions: OptionSet {
@@ -110,6 +114,8 @@ extension JSON {
     public static var escapeSlashes: Self { .init(rawValue: YYJSON_WRITE_ESCAPE_SLASHES) }
     @_alwaysEmitIntoClient
     public static var allowInfAndNan: Self { .init(rawValue: YYJSON_WRITE_ALLOW_INF_AND_NAN) }
+    @_alwaysEmitIntoClient
+    public static var allowInvalidUnicode: Self { .init(rawValue: YYJSON_WRITE_ALLOW_INVALID_UNICODE) }
 
   }
 }

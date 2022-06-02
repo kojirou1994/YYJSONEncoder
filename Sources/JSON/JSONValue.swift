@@ -11,7 +11,7 @@ public struct RawJSONValue {
   }
 }
 
-public protocol JSONValueProtocol: CustomStringConvertible {
+public protocol JSONValueProtocol: CustomStringConvertible, Equatable {
   associatedtype Array where Array: Collection, Array.Element == Self
   associatedtype Object where Object: Sequence, Object.Element == (key: Self, value: Self)
 
@@ -39,6 +39,11 @@ public extension JSONValueProtocol {
   @inlinable
   var typeDescription: String {
     .init(cString: typeDescriptionCString)
+  }
+
+  @inlinable
+  var isRaw: Bool {
+    unsafe_yyjson_is_raw(rawJSONValue.rawPtr)
   }
 
   @inlinable
@@ -107,6 +112,14 @@ public extension JSONValueProtocol {
   }
 
   // MARK: Value API
+
+  @inlinable
+  var rawCString: UnsafePointer<CChar>? {
+    guard isRaw else {
+      return nil
+    }
+    return unsafe_yyjson_get_raw(rawJSONValue.rawPtr)
+  }
 
   @inlinable
   var bool: Bool? {
@@ -198,6 +211,11 @@ public struct JSONValue {
 }
 
 extension JSONValue: JSONValueProtocol {
+
+  @inlinable
+  public static func == (lhs: JSONValue, rhs: JSONValue) -> Bool {
+    yyjson_equals(lhs.rawJSONValue.valPtr, rhs.rawJSONValue.valPtr)
+  }
 
   public struct Array {
     @usableFromInline

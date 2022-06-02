@@ -3,6 +3,7 @@ import yyjson
 public enum JSONError: Error {
   case noMemory
   case bufferTooSmall
+  case patchFail
 }
 
 public struct JSONReadError: Error {

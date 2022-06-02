@@ -151,6 +151,16 @@ public extension MutableJSON {
     .init(val: try yyjson_val_mut_copy(doc, value.rawJSONValue.valPtr).unwrap(JSONError.noMemory), doc: self)
   }
 
+  @inlinable
+  func copy(value: MutableJSONValue) throws -> MutableJSONValue {
+    .init(val: try yyjson_mut_val_mut_copy(doc, value.rawJSONValue.mutValPtr).unwrap(JSONError.noMemory), doc: self)
+  }
+
+  @inlinable
+  func mergePatched(original: JSONValue, patch: JSONValue) throws -> MutableJSONValue {
+    .init(val: try yyjson_merge_patch(doc, original.rawJSONValue.valPtr, patch.rawJSONValue.valPtr).unwrap(JSONError.noMemory), doc: self)
+  }
+
 }
 
 public extension JSON {
@@ -158,6 +168,15 @@ public extension JSON {
   func copyMutable(allocator: JSONAllocator? = nil) throws -> MutableJSON {
     try withOptionalAllocatorPointer(to: allocator) { allocator in
       try MutableJSON(yyjson_doc_mut_copy(doc, allocator).unwrap(JSONError.noMemory))
+    }
+  }
+}
+
+public extension MutableJSON {
+  @inlinable
+  func copyMutable(allocator: JSONAllocator? = nil) throws -> MutableJSON {
+    try withOptionalAllocatorPointer(to: allocator) { allocator in
+      try MutableJSON(yyjson_mut_doc_mut_copy(doc, allocator).unwrap(JSONError.noMemory))
     }
   }
 }

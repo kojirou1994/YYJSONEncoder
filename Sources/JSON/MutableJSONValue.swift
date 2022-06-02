@@ -23,6 +23,11 @@ public struct MutableJSONValue {
 extension MutableJSONValue: JSONValueProtocol {
 
   @inlinable
+  public static func == (lhs: MutableJSONValue, rhs: MutableJSONValue) -> Bool {
+    yyjson_mut_equals(lhs.rawJSONValue.mutValPtr, rhs.rawJSONValue.mutValPtr)
+  }
+
+  @inlinable
   public var array: Array? {
     guard isArray else {
       return nil
@@ -227,10 +232,10 @@ extension MutableJSONValue.Object: Sequence {
     }
 
     @usableFromInline
-    let object: MutableJSONValue
+    internal let object: MutableJSONValue
 
     @usableFromInline
-    var iter: yyjson_mut_obj_iter
+    internal var iter: yyjson_mut_obj_iter
 
     @inlinable
     public mutating func next() -> (key: MutableJSONValue, value: MutableJSONValue)? {
