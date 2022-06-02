@@ -28,8 +28,8 @@ public enum YYJSONDecodeError: Error, CustomStringConvertible {
 
 public struct YYJSONDecoder: Decoder {
 
-  public init(doc: JSON) {
-    self.root = doc.root
+  public init(_ root: JSONValue) {
+    self.root = root
     codingPath = .init()
     self.userInfo = .init()
   }
