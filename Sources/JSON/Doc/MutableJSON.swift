@@ -142,23 +142,23 @@ public extension MutableJSON {
     }
     set {
       assert(newValue == nil || newValue?.doc === self)
-      yyjson_mut_doc_set_root(doc, newValue?.rawJSONValue.mutValPtr)
+      yyjson_mut_doc_set_root(doc, newValue?.val)
     }
   }
 
   @inlinable
   func copy(value: JSONValue) throws -> MutableJSONValue {
-    .init(val: try yyjson_val_mut_copy(doc, value.rawJSONValue.valPtr).unwrap(JSONError.noMemory), doc: self)
+    .init(val: try yyjson_val_mut_copy(doc, value.val).unwrap(JSONError.noMemory), doc: self)
   }
 
   @inlinable
   func copy(value: MutableJSONValue) throws -> MutableJSONValue {
-    .init(val: try yyjson_mut_val_mut_copy(doc, value.rawJSONValue.mutValPtr).unwrap(JSONError.noMemory), doc: self)
+    .init(val: try yyjson_mut_val_mut_copy(doc, value.val).unwrap(JSONError.noMemory), doc: self)
   }
 
   @inlinable
   func mergePatched(original: JSONValue, patch: JSONValue) throws -> MutableJSONValue {
-    .init(val: try yyjson_merge_patch(doc, original.rawJSONValue.valPtr, patch.rawJSONValue.valPtr).unwrap(JSONError.noMemory), doc: self)
+    .init(val: try yyjson_merge_patch(doc, original.val, patch.val).unwrap(JSONError.noMemory), doc: self)
   }
 
 }

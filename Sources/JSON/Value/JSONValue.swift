@@ -1,216 +1,26 @@
 import yyjson
 import CUtility
 
-public struct RawJSONValue {
-
-  @usableFromInline
-  let rawPtr: UnsafeMutableRawPointer
-
-  @usableFromInline
-  var valPtr: UnsafeMutablePointer<yyjson_val> {
-    rawPtr.assumingMemoryBound(to: yyjson_val.self)
-  }
-}
-
-public protocol JSONValueProtocol: CustomStringConvertible, Equatable {
-  associatedtype Array where Array: Collection, Array.Element == Self
-  associatedtype Object where Object: Sequence, Object.Element == (key: Self, value: Self)
-
-  var rawJSONValue: RawJSONValue { get }
-
-  // MARK: JSON Pointer
-  func value(withPointer pointer: String) -> Self
-
-  // MARK: Array API
-  subscript(index: Int) -> Self? { get }
-  var array: Array? { get }
-
-  // MARK: Object API
-  subscript(keyBuffer: UnsafeBufferPointer<CChar>) -> Self? { get }
-  var object: Object? { get }
-}
-
-public extension JSONValueProtocol {
-
-  @inlinable
-  var typeDescription: StaticCString {
-    .init(cString: yyjson_get_type_desc(rawJSONValue.valPtr))
-  }
-
-  @inlinable
-  var isRaw: Bool {
-    unsafe_yyjson_is_raw(rawJSONValue.rawPtr)
-  }
-
-  @inlinable
-  var isNull: Bool {
-    unsafe_yyjson_is_null(rawJSONValue.rawPtr)
-  }
-
-  @inlinable
-  var isTrue: Bool {
-    unsafe_yyjson_is_true(rawJSONValue.rawPtr)
-  }
-
-  @inlinable
-  var isFalse: Bool {
-    unsafe_yyjson_is_false(rawJSONValue.rawPtr)
-  }
-
-  @inlinable
-  var isBool: Bool {
-    unsafe_yyjson_is_bool(rawJSONValue.rawPtr)
-  }
-
-  @inlinable
-  var isUnsignedInteger: Bool {
-    unsafe_yyjson_is_uint(rawJSONValue.rawPtr)
-  }
-
-  @inlinable
-  var isSignedInteger: Bool {
-    unsafe_yyjson_is_sint(rawJSONValue.rawPtr)
-  }
-
-  @inlinable
-  var isInteger: Bool {
-    unsafe_yyjson_is_int(rawJSONValue.rawPtr)
-  }
-
-  @inlinable
-  var isDouble: Bool {
-    unsafe_yyjson_is_real(rawJSONValue.rawPtr)
-  }
-
-  @inlinable
-  var isNumber: Bool {
-    unsafe_yyjson_is_num(rawJSONValue.rawPtr)
-  }
-
-  @inlinable
-  var isString: Bool {
-    unsafe_yyjson_is_str(rawJSONValue.rawPtr)
-  }
-
-  @inlinable
-  var isArray: Bool {
-    unsafe_yyjson_is_arr(rawJSONValue.rawPtr)
-  }
-
-  @inlinable
-  var isObject: Bool {
-    unsafe_yyjson_is_obj(rawJSONValue.rawPtr)
-  }
-
-  @inlinable
-  var isContainer: Bool {
-    unsafe_yyjson_is_ctn(rawJSONValue.rawPtr)
-  }
-
-  // MARK: Value API
-
-  @inlinable
-  var rawCString: UnsafePointer<CChar>? {
-    guard isRaw else {
-      return nil
-    }
-    return unsafe_yyjson_get_raw(rawJSONValue.rawPtr)
-  }
-
-  @inlinable
-  var bool: Bool? {
-    guard isBool else {
-      return nil
-    }
-    return unsafe_yyjson_get_bool(rawJSONValue.rawPtr)
-  }
-
-  @inlinable
-  var uint: UInt64? {
-    guard isUnsignedInteger else {
-      return nil
-    }
-    return unsafe_yyjson_get_uint(rawJSONValue.rawPtr)
-  }
-
-  @inlinable
-  var int: Int64? {
-    guard isSignedInteger else {
-      return nil
-    }
-    return unsafe_yyjson_get_sint(rawJSONValue.rawPtr)
-  }
-
-  @inlinable
-  var double: Double? {
-    guard isDouble else {
-      return nil
-    }
-    return unsafe_yyjson_get_real(rawJSONValue.rawPtr)
-  }
-
-  @inlinable
-  var cString: UnsafePointer<CChar>? {
-    guard isString else {
-      return nil
-    }
-    return unsafe_yyjson_get_str(rawJSONValue.rawPtr)
-  }
-
-  @inlinable
-  var string: String? {
-    cString.map(String.init)
-  }
-
-  @inlinable
-  subscript<T: StringProtocol>(key: T) -> Self? {
-    key.utf8.withContiguousBuffer { buffer in
-      self[.init(start: .init(OpaquePointer(buffer.baseAddress)), count: buffer.count)]
-    }
-  }
-}
-
-public extension JSONValueProtocol {
-  @inline(never)
-  var description: String {
-    if isString {
-      return string!
-    }
-    if isUnsignedInteger {
-      return uint!.description
-    }
-    if isSignedInteger {
-      return int!.description
-    }
-    if isArray {
-      return "Array"
-    }
-    if isObject {
-      return "Object"
-    }
-    return "Unknown"
-  }
-}
-
 public struct JSONValue {
 
   @usableFromInline
   internal init(val: UnsafeMutablePointer<yyjson_val>, doc: JSON) {
-    self.rawJSONValue = .init(rawPtr: val)
+    self.val = val
     self.doc = doc
   }
 
-  public let rawJSONValue: RawJSONValue
+  @usableFromInline
+  internal let val: UnsafeMutablePointer<yyjson_val>
 
   @usableFromInline
-  let doc: JSON
+  internal let doc: JSON
 }
 
 extension JSONValue: JSONValueProtocol {
 
   @inlinable
   public static func == (lhs: JSONValue, rhs: JSONValue) -> Bool {
-    yyjson_equals(lhs.rawJSONValue.valPtr, rhs.rawJSONValue.valPtr)
+    yyjson_equals(lhs.val, rhs.val)
   }
 
   public struct Array {
@@ -237,12 +47,12 @@ extension JSONValue: JSONValueProtocol {
 
   @inlinable
   public func value(withPointer pointer: String) -> JSONValue {
-    .init(val: yyjson_get_pointer(rawJSONValue.valPtr, pointer), doc: doc)
+    .init(val: yyjson_get_pointer(val, pointer), doc: doc)
   }
 
   @inlinable
   public subscript(index: Int) -> JSONValue? {
-    yyjson_arr_get(rawJSONValue.valPtr, index).map { .init(val: $0, doc: doc) }
+    yyjson_arr_get(val, index).map { .init(val: $0, doc: doc) }
   }
 
   @inlinable
@@ -255,7 +65,7 @@ extension JSONValue: JSONValueProtocol {
 
   @inlinable
   public subscript(keyBuffer: UnsafeBufferPointer<CChar>) -> JSONValue? {
-    yyjson_obj_getn(rawJSONValue.valPtr, keyBuffer.baseAddress, keyBuffer.count)
+    yyjson_obj_getn(val, keyBuffer.baseAddress, keyBuffer.count)
       .map { .init(val: $0, doc: doc) }
   }
 
@@ -267,9 +77,133 @@ extension JSONValue: JSONValueProtocol {
     return .init(value: self)
   }
 
+  @inlinable
+  public var typeDescription: StaticCString {
+    .init(cString: yyjson_get_type_desc(val))
+  }
+
+  @inlinable
+  public var isRaw: Bool {
+    yyjson_is_raw(val)
+  }
+
+  @inlinable
+  public var isNull: Bool {
+    yyjson_is_null(val)
+  }
+
+  @inlinable
+  public var isTrue: Bool {
+    yyjson_is_true(val)
+  }
+
+  @inlinable
+  public var isFalse: Bool {
+    yyjson_is_false(val)
+  }
+
+  @inlinable
+  public var isBool: Bool {
+    yyjson_is_bool(val)
+  }
+
+  @inlinable
+  public var isUnsignedInteger: Bool {
+    yyjson_is_uint(val)
+  }
+
+  @inlinable
+  public var isSignedInteger: Bool {
+    yyjson_is_sint(val)
+  }
+
+  @inlinable
+  public var isInteger: Bool {
+    yyjson_is_int(val)
+  }
+
+  @inlinable
+  public var isDouble: Bool {
+    yyjson_is_real(val)
+  }
+
+  @inlinable
+  public var isNumber: Bool {
+    yyjson_is_num(val)
+  }
+
+  @inlinable
+  public var isString: Bool {
+    yyjson_is_str(val)
+  }
+
+  @inlinable
+  public var isArray: Bool {
+    yyjson_is_arr(val)
+  }
+
+  @inlinable
+  public var isObject: Bool {
+    yyjson_is_obj(val)
+  }
+
+  @inlinable
+  public var isContainer: Bool {
+    yyjson_is_ctn(val)
+  }
+
+  // MARK: Value API
+
+  @inlinable
+  public var bool: Bool? {
+    yyjson_get_bool(val)
+  }
+
+  @inlinable
+  public var uint64: UInt64? {
+    yyjson_get_uint(val)
+  }
+
+  @inlinable
+  public var int64: Int64? {
+    yyjson_get_sint(val)
+  }
+
+  @inlinable
+  public var double: Double? {
+    yyjson_get_real(val)
+  }
+
+  @inlinable
+  public func withRawCStringIfAvailable<T>(_ body: (UnsafePointer<CChar>) throws -> T) rethrows -> T? {
+    guard let raw = yyjson_get_raw(val) else {
+      return nil
+    }
+    return try body(raw)
+  }
+
+  @inlinable
+  public var rawString: String? {
+    withRawCStringIfAvailable(String.init)
+  }
+
+  @inlinable
+  public func withCStringIfAvailable<T>(_ body: (UnsafePointer<CChar>) throws -> T) rethrows -> T? {
+    guard let string = yyjson_get_str(val) else {
+      return nil
+    }
+    return try body(string)
+  }
+
+  @inlinable
+  public var string: String? {
+    withCStringIfAvailable(String.init)
+  }
+
 }
 
 extension JSONValue.Array: Collection {
+
   @inlinable
   public func index(after i: Int) -> Int {
     i + 1
@@ -277,7 +211,7 @@ extension JSONValue.Array: Collection {
 
   @inlinable
   public var count: Int {
-    unsafe_yyjson_get_len(value.rawJSONValue.rawPtr)
+    yyjson_get_len(value.val)
   }
 
   @inlinable
@@ -293,13 +227,13 @@ extension JSONValue.Array: Collection {
   @inlinable
   public subscript(position: Int) -> JSONValue {
     precondition(0..<count ~= position)
-    return .init(val: yyjson_arr_get(value.rawJSONValue.valPtr, position), doc: value.doc)
+    return .init(val: yyjson_arr_get(value.val, position), doc: value.doc)
   }
 
   @inlinable
   public func makeIterator() -> Iterator {
     var iter: yyjson_arr_iter = .init()
-    yyjson_arr_iter_init(value.rawJSONValue.valPtr, &iter)
+    yyjson_arr_iter_init(value.val, &iter)
     return .init(array: value, iter: iter)
   }
 
@@ -336,7 +270,7 @@ extension JSONValue.Object: Sequence {
 
   @inlinable
   public var count: Int {
-    unsafe_yyjson_get_len(value.rawJSONValue.rawPtr)
+    yyjson_get_len(value.val)
   }
 
   @inlinable
@@ -350,7 +284,7 @@ extension JSONValue.Object: Sequence {
   @inlinable
   public func makeIterator() -> Iterator {
     var iter: yyjson_obj_iter = .init()
-    yyjson_obj_iter_init(value.rawJSONValue.valPtr, &iter)
+    yyjson_obj_iter_init(value.val, &iter)
     return .init(object: value, iter: iter)
   }
 

@@ -386,40 +386,13 @@ extension JSONValueProtocol {
       return number
     }
 
-    if let value = int {
+    if let value = int64 {
       return try convert(value)
-    } else if let value = uint {
+    } else if let value = uint64 {
       return try convert(value)
     } else {
       throw YYJSONDecodeError.typeMismatch
     }
   }
 
-//  func getInt64() throws -> Int64 {
-//    if unsafe_yyjson_is_sint(root) {
-//      return unsafe_yyjson_get_sint(root)
-//    } else {
-//      throw YYJSONDecodeError.typeMismatch
-//    }
-//  }
-//
-//  func getUInt64() throws -> UInt64 {
-//    if unsafe_yyjson_is_uint(root) {
-//      return unsafe_yyjson_get_uint(root)
-//    } else {
-//      throw YYJSONDecodeError.typeMismatch
-//    }
-//  }
-
-//  func getDouble() throws -> Double {
-//    guard unsafe_yyjson_is_num(root) else {
-//      throw YYJSONDecodeError.typeMismatch
-//    }
-//    if unsafe_yyjson_is_real(root) {
-//      return unsafe_yyjson_get_real(root)
-//    } else if unsafe_yyjson_is_uint(root) {
-//      return Double(unsafe_yyjson_get_uint(root))
-//    }
-//    return Double(unsafe_yyjson_get_sint(root))
-//  }
 }
