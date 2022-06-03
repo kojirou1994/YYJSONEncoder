@@ -60,8 +60,8 @@ extension MutableJSONValue: MutableJSONValueProtocol {
   }
 
   @inlinable
-  public func value(withPointer pointer: String) -> MutableJSONValue {
-    .init(val: yyjson_mut_get_pointer(val, pointer), doc: doc)
+  public func value(withPointer pointer: UnsafePointer<CChar>) -> MutableJSONValue? {
+    yyjson_mut_get_pointer(val, pointer).map { .init(val: $0, doc: doc) }
   }
 
   @inlinable

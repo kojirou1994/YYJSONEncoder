@@ -7,7 +7,7 @@ public protocol JSONValueProtocol: JSONObjectProtocol, CustomStringConvertible, 
   associatedtype Object where Object: Sequence, Object.Element == (key: Self, value: Self), Object: JSONObjectProtocol, Object.Value == Self
 
   // MARK: JSON Pointer
-  func value(withPointer pointer: String) -> Self
+  func value(withPointer pointer: UnsafePointer<CChar>) -> Self?
 
   // MARK: Array API
   subscript(index: Int) -> Self? { get }

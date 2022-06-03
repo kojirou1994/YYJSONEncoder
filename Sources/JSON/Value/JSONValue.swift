@@ -46,8 +46,8 @@ extension JSONValue: JSONValueProtocol {
   }
 
   @inlinable
-  public func value(withPointer pointer: String) -> JSONValue {
-    .init(val: yyjson_get_pointer(val, pointer), doc: doc)
+  public func value(withPointer pointer: UnsafePointer<CChar>) -> JSONValue? {
+    yyjson_get_pointer(val, pointer).map { .init(val: $0, doc: doc) }
   }
 
   @inlinable
