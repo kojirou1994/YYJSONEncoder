@@ -1,7 +1,7 @@
 public protocol JSONObjectProtocol {
   associatedtype Value
 
-  subscript(keyBuffer: UnsafeBufferPointer<CChar>) -> Value? { get }
+  subscript(keyBuffer: UnsafeRawBufferPointer) -> Value? { get }
 }
 
 public extension JSONObjectProtocol {

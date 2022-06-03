@@ -59,12 +59,14 @@ public protocol JSONValueProtocol: JSONObjectProtocol, CustomStringConvertible, 
 
   func withCStringIfAvailable<T>(_ body: (UnsafePointer<CChar>) throws -> T) rethrows -> T?
 
+  func equals(toString buffer: UnsafeRawBufferPointer) -> Bool
+
 }
 
 public extension JSONValueProtocol {
 
   @inlinable
-  subscript(keyBuffer: UnsafeBufferPointer<CChar>) -> Value? {
+  subscript(keyBuffer: UnsafeRawBufferPointer) -> Value? {
     object?[keyBuffer]
   }
 
@@ -76,6 +78,11 @@ public extension JSONValueProtocol {
   @inlinable
   var string: String? {
     withCStringIfAvailable(String.init)
+  }
+
+  @inlinable
+  static func == <T: StringProtocol> (value: Self, string: T) -> Bool {
+    string.withCStringBuffer { value.equals(toString: .init($0)) }
   }
 
   @inline(never)

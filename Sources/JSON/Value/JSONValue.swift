@@ -184,6 +184,10 @@ extension JSONValue: JSONValueProtocol {
     return try body(string)
   }
 
+  public func equals(toString buffer: UnsafeRawBufferPointer) -> Bool {
+    yyjson_equals_strn(val, buffer.baseAddress, buffer.count)
+  }
+
 }
 
 extension JSONValue.Array: Collection, RandomAccessCollection {
@@ -271,7 +275,7 @@ extension JSONValue.Object: Sequence, JSONObjectProtocol {
   public var underestimatedCount: Int { count }
 
   @inlinable
-  public subscript(keyBuffer: UnsafeBufferPointer<CChar>) -> JSONValue? {
+  public subscript(keyBuffer: UnsafeRawBufferPointer) -> JSONValue? {
     yyjson_obj_getn(value.val, keyBuffer.baseAddress, keyBuffer.count)
       .map { .init(val: $0, doc: value.doc) }
   }

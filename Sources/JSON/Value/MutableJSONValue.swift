@@ -182,6 +182,11 @@ extension MutableJSONValue: MutableJSONValueProtocol {
     return try body(string)
   }
 
+  @inlinable
+  public func equals(toString buffer: UnsafeRawBufferPointer) -> Bool {
+    yyjson_mut_equals_strn(val, buffer.baseAddress, buffer.count)
+  }
+
 }
 
 
@@ -329,7 +334,7 @@ extension MutableJSONValue.Object: Sequence, JSONObjectProtocol {
   @inlinable
   public var underestimatedCount: Int { count }
 
-  public subscript(keyBuffer: UnsafeBufferPointer<CChar>) -> MutableJSONValue? {
+  public subscript(keyBuffer: UnsafeRawBufferPointer) -> MutableJSONValue? {
     yyjson_mut_obj_getn(value.val, keyBuffer.baseAddress, keyBuffer.count)
       .map { .init(val: $0, doc: value.doc) }
   }
