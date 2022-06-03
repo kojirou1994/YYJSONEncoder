@@ -1,24 +1,22 @@
 import yyjson
 import Precondition
+import CUtility
 
-public protocol JSONWriter {
+public protocol JSONExportable {
   func write(options: JSON.WriteOptions, length: UnsafeMutablePointer<Int>?, allocator: JSONAllocator?) throws -> UnsafeMutablePointer<CChar>
   func write(toFile path: UnsafePointer<CChar>, options: JSON.WriteOptions, length: UnsafeMutablePointer<Int>?, allocator: JSONAllocator?) throws
 }
 
-public extension JSONWriter {
+public extension JSONExportable {
   @inlinable
-  func write(options: JSON.WriteOptions) throws -> String {
+  func write(options: JSON.WriteOptions) throws -> LazyCopiedCString {
     var length = 0
     let str = try write(options: options, length: &length, allocator: nil)
-    defer {
-      free(str)
-    }
-    return String(decoding: UnsafeRawBufferPointer(UnsafeMutableBufferPointer.init(start: str, count: length)), as: UTF8.self)
+    return .init(cString: str, forceLength: length, freeWhenDone: true)
   }
 }
 
-extension JSON: JSONWriter {
+extension JSON: JSONExportable {
   @inlinable
   public func write(options: WriteOptions, length: UnsafeMutablePointer<Int>?, allocator: JSONAllocator?) throws -> UnsafeMutablePointer<CChar> {
     var err = yyjson_write_err()
@@ -40,7 +38,7 @@ extension JSON: JSONWriter {
   }
 }
 
-extension MutableJSON: JSONWriter {
+extension MutableJSON: JSONExportable {
   @inlinable
   public func write(options: JSON.WriteOptions, length: UnsafeMutablePointer<Int>?, allocator: JSONAllocator?) throws -> UnsafeMutablePointer<CChar> {
     var err = yyjson_write_err()
@@ -62,7 +60,7 @@ extension MutableJSON: JSONWriter {
   }
 }
 
-extension JSONValue: JSONWriter {
+extension JSONValue: JSONExportable {
   @inlinable
   public func write(options: JSON.WriteOptions, length: UnsafeMutablePointer<Int>?, allocator: JSONAllocator?) throws -> UnsafeMutablePointer<CChar> {
     var err = yyjson_write_err()
@@ -84,7 +82,7 @@ extension JSONValue: JSONWriter {
   }
 }
 
-extension MutableJSONValue: JSONWriter {
+extension MutableJSONValue: JSONExportable {
   @inlinable
   public func write(options: JSON.WriteOptions, length: UnsafeMutablePointer<Int>?, allocator: JSONAllocator?) throws -> UnsafeMutablePointer<CChar> {
     var err = yyjson_write_err()
