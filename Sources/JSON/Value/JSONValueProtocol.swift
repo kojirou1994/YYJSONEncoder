@@ -58,14 +58,21 @@ public protocol JSONValueProtocol: CustomStringConvertible, Equatable {
 
   func withRawCStringIfAvailable<T>(_ body: (UnsafePointer<CChar>) throws -> T) rethrows -> T?
 
-  var rawString: String? { get }
-
   func withCStringIfAvailable<T>(_ body: (UnsafePointer<CChar>) throws -> T) rethrows -> T?
 
-  var string: String? { get }
 }
 
 public extension JSONValueProtocol {
+
+  @inlinable
+  var rawString: String? {
+    withRawCStringIfAvailable(String.init)
+  }
+
+  @inlinable
+  var string: String? {
+    withCStringIfAvailable(String.init)
+  }
 
   @inlinable
   subscript<T: StringProtocol>(key: T) -> Self? {

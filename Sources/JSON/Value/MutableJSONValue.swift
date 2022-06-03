@@ -186,21 +186,11 @@ extension MutableJSONValue: MutableJSONValueProtocol {
   }
 
   @inlinable
-  public var rawString: String? {
-    withRawCStringIfAvailable(String.init)
-  }
-
-  @inlinable
   public func withCStringIfAvailable<T>(_ body: (UnsafePointer<CChar>) throws -> T) rethrows -> T? {
     guard let string = yyjson_mut_get_str(val) else {
       return nil
     }
     return try body(string)
-  }
-
-  @inlinable
-  public var string: String? {
-    withCStringIfAvailable(String.init)
   }
 
 }
