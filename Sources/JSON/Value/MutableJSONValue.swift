@@ -187,7 +187,7 @@ extension MutableJSONValue.Array: RangeReplaceableCollection, MutableCollection,
   @inlinable
   public init() {
     let doc = try! MutableJSON()
-    self = try! doc.array().array!
+    self = try! doc.createArray().array!
   }
 
   @inlinable

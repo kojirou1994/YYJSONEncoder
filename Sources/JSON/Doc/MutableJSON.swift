@@ -28,107 +28,119 @@ public extension MutableJSON {
   // MARK: Mutable JSON Value Creation API
 
   @inlinable
-  func null() throws -> MutableJSONValue {
+  func createNull() throws -> MutableJSONValue {
     .init(val: try yyjson_mut_null(doc).unwrap(JSONError.noMemory), doc: self)
   }
 
   @inlinable
-  func bool(_ value: Bool) throws -> MutableJSONValue {
+  func create(_ value: Bool) throws -> MutableJSONValue {
     .init(val: try yyjson_mut_bool(doc, value).unwrap(JSONError.noMemory), doc: self)
   }
 
   @inlinable
-  func uint(_ value: UInt64) throws -> MutableJSONValue {
+  func create(_ value: UInt64) throws -> MutableJSONValue {
     .init(val: try yyjson_mut_uint(doc, value).unwrap(JSONError.noMemory), doc: self)
   }
 
   @inlinable
-  func sint(_ value: Int64) throws -> MutableJSONValue {
+  func create(_ value: Int64) throws -> MutableJSONValue {
     .init(val: try yyjson_mut_sint(doc, value).unwrap(JSONError.noMemory), doc: self)
   }
 
   @inlinable
-  func double(_ value: Double) throws -> MutableJSONValue {
+  func create(_ value: Double) throws -> MutableJSONValue {
     .init(val: try yyjson_mut_real(doc, value).unwrap(JSONError.noMemory), doc: self)
   }
 
   @inlinable
-  func string(_ value: UnsafeBufferPointer<UInt8>) throws -> MutableJSONValue {
-    .init(val: try yyjson_mut_strn(doc, .init(OpaquePointer(value.baseAddress)), value.count).unwrap(JSONError.noMemory), doc: self)
+  func create(stringNoCopy value: UnsafeRawBufferPointer) throws -> MutableJSONValue {
+    .init(val: try yyjson_mut_strn(doc, value.baseAddress, value.count).unwrap(JSONError.noMemory), doc: self)
   }
 
   @inlinable
-  func string<T: StringProtocol>(_ value: T) throws -> MutableJSONValue {
+  func create<T: StringProtocol>(_ value: T) throws -> MutableJSONValue {
     try value.withCStringBuffer { buffer in
       MutableJSONValue(val: try yyjson_mut_strncpy(doc, buffer.baseAddress, buffer.count).unwrap(JSONError.noMemory), doc: self)
     }
   }
 
+  @inlinable
+  func create(rawNoCopy value: UnsafeRawBufferPointer) throws -> MutableJSONValue {
+    .init(val: try yyjson_mut_rawn(doc, value.baseAddress, value.count).unwrap(JSONError.noMemory), doc: self)
+  }
+
+  @inlinable
+  func create<T: StringProtocol>(raw value: T) throws -> MutableJSONValue {
+    try value.withCStringBuffer { buffer in
+      MutableJSONValue(val: try yyjson_mut_rawncpy(doc, buffer.baseAddress, buffer.count).unwrap(JSONError.noMemory), doc: self)
+    }
+  }
+
   // MARK: Mutable JSON Array Creation API
   @inlinable
-  func array() throws -> MutableJSONValue {
+  func createArray() throws -> MutableJSONValue {
     .init(val: try yyjson_mut_arr(doc).unwrap(JSONError.noMemory), doc: self)
   }
 
   @inlinable
-  func array(values: UnsafeBufferPointer<Bool>) throws -> MutableJSONValue {
+  func createArray(values: UnsafeBufferPointer<Bool>) throws -> MutableJSONValue {
     .init(val: try yyjson_mut_arr_with_bool(doc, values.baseAddress, values.count).unwrap(JSONError.noMemory), doc: self)
   }
 
   @inlinable
-  func array(values: UnsafeBufferPointer<Int8>) throws -> MutableJSONValue {
+  func createArray(values: UnsafeBufferPointer<Int8>) throws -> MutableJSONValue {
     .init(val: try yyjson_mut_arr_with_sint8(doc, values.baseAddress, values.count).unwrap(JSONError.noMemory), doc: self)
   }
 
   @inlinable
-  func array(values: UnsafeBufferPointer<Int16>) throws -> MutableJSONValue {
+  func createArray(values: UnsafeBufferPointer<Int16>) throws -> MutableJSONValue {
     .init(val: try yyjson_mut_arr_with_sint16(doc, values.baseAddress, values.count).unwrap(JSONError.noMemory), doc: self)
   }
 
   @inlinable
-  func array(values: UnsafeBufferPointer<Int32>) throws -> MutableJSONValue {
+  func createArray(values: UnsafeBufferPointer<Int32>) throws -> MutableJSONValue {
     .init(val: try yyjson_mut_arr_with_sint32(doc, values.baseAddress, values.count).unwrap(JSONError.noMemory), doc: self)
   }
 
   @inlinable
-  func array(values: UnsafeBufferPointer<Int64>) throws -> MutableJSONValue {
+  func createArray(values: UnsafeBufferPointer<Int64>) throws -> MutableJSONValue {
     .init(val: try yyjson_mut_arr_with_sint64(doc, values.baseAddress, values.count).unwrap(JSONError.noMemory), doc: self)
   }
 
   @inlinable
-  func array(values: UnsafeBufferPointer<UInt8>) throws -> MutableJSONValue {
+  func createArray(values: UnsafeBufferPointer<UInt8>) throws -> MutableJSONValue {
     .init(val: try yyjson_mut_arr_with_uint8(doc, values.baseAddress, values.count).unwrap(JSONError.noMemory), doc: self)
   }
 
   @inlinable
-  func array(values: UnsafeBufferPointer<UInt16>) throws -> MutableJSONValue {
+  func createArray(values: UnsafeBufferPointer<UInt16>) throws -> MutableJSONValue {
     .init(val: try yyjson_mut_arr_with_uint16(doc, values.baseAddress, values.count).unwrap(JSONError.noMemory), doc: self)
   }
 
   @inlinable
-  func array(values: UnsafeBufferPointer<UInt32>) throws -> MutableJSONValue {
+  func createArray(values: UnsafeBufferPointer<UInt32>) throws -> MutableJSONValue {
     .init(val: try yyjson_mut_arr_with_uint32(doc, values.baseAddress, values.count).unwrap(JSONError.noMemory), doc: self)
   }
 
   @inlinable
-  func array(values: UnsafeBufferPointer<UInt64>) throws -> MutableJSONValue {
+  func createArray(values: UnsafeBufferPointer<UInt64>) throws -> MutableJSONValue {
     .init(val: try yyjson_mut_arr_with_uint64(doc, values.baseAddress, values.count).unwrap(JSONError.noMemory), doc: self)
   }
 
   @inlinable
-  func array(values: UnsafeBufferPointer<Float>) throws -> MutableJSONValue {
+  func createArray(values: UnsafeBufferPointer<Float>) throws -> MutableJSONValue {
     .init(val: try yyjson_mut_arr_with_float(doc, values.baseAddress, values.count).unwrap(JSONError.noMemory), doc: self)
   }
 
   @inlinable
-  func array(values: UnsafeBufferPointer<Double>) throws -> MutableJSONValue {
+  func createArray(values: UnsafeBufferPointer<Double>) throws -> MutableJSONValue {
     .init(val: try yyjson_mut_arr_with_double(doc, values.baseAddress, values.count).unwrap(JSONError.noMemory), doc: self)
   }
 
   // MARK: Mutable JSON Object Creation API
 
   @inlinable
-  func object() throws -> MutableJSONValue {
+  func createObject() throws -> MutableJSONValue {
     .init(val: try yyjson_mut_obj(doc).unwrap(JSONError.noMemory), doc: self)
   }
 }
