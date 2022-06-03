@@ -1,4 +1,4 @@
-import Foundation
+import protocol Foundation.ContiguousBytes
 
 public extension JSON {
 

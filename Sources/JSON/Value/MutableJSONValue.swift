@@ -70,17 +70,6 @@ extension MutableJSONValue: MutableJSONValueProtocol {
   }
 
   @inlinable
-  public subscript(keyBuffer: UnsafeBufferPointer<CChar>) -> MutableJSONValue? {
-    get {
-      yyjson_mut_obj_getn(val, keyBuffer.baseAddress, keyBuffer.count)
-        .map { .init(val: $0, doc: doc) }
-    }
-    nonmutating set {
-
-    }
-  }
-
-  @inlinable
   public var typeDescription: StaticCString {
     .init(cString: yyjson_mut_get_type_desc(val))
   }
@@ -252,8 +241,13 @@ extension MutableJSONValue.Array: RangeReplaceableCollection, MutableCollection,
   }
 
   @inlinable
+  public func rotate(at i: Int) -> Bool {
+    yyjson_mut_arr_rotate(value.val, i)
+  }
+
+  @inlinable
   public var count: Int {
-    yyjson_mut_get_len(value.val)
+    yyjson_mut_arr_size(value.val)
   }
 
   @inlinable
@@ -305,6 +299,16 @@ extension MutableJSONValue.Array: RangeReplaceableCollection, MutableCollection,
     var iter: yyjson_mut_arr_iter
 
     @inlinable
+    public mutating func hasNext() -> Bool {
+      yyjson_mut_arr_iter_has_next(&iter)
+    }
+
+    @inlinable
+    public mutating func removeCurrent() -> MutableJSONValue? {
+      yyjson_mut_arr_iter_remove(&iter).map { MutableJSONValue(val: $0, doc: array.doc) }
+    }
+
+    @inlinable
     public mutating func next() -> MutableJSONValue? {
       if let val = yyjson_mut_arr_iter_next(&iter) {
         return .init(val: val, doc: array.doc)
@@ -315,19 +319,56 @@ extension MutableJSONValue.Array: RangeReplaceableCollection, MutableCollection,
   }
 }
 
-extension MutableJSONValue.Object: Sequence {
+extension MutableJSONValue.Object: Sequence, JSONObjectProtocol {
 
   @inlinable
   public var count: Int {
-    yyjson_mut_get_len(value.val)
+    yyjson_mut_obj_size(value.val)
   }
 
   @inlinable
   public var underestimatedCount: Int { count }
 
+  public subscript(keyBuffer: UnsafeBufferPointer<CChar>) -> MutableJSONValue? {
+    yyjson_mut_obj_getn(value.val, keyBuffer.baseAddress, keyBuffer.count)
+      .map { .init(val: $0, doc: value.doc) }
+  }
+
   @inlinable
-  public subscript(key: String) -> MutableJSONValue? {
-    value[key]
+  public func add(key: MutableJSONValue, value: MutableJSONValue) {
+    precondition(yyjson_mut_obj_add(value.val, key.val, value.val))
+  }
+
+  @inlinable
+  public func put(key: MutableJSONValue, value: MutableJSONValue) {
+    precondition(yyjson_mut_obj_put(value.val, key.val, value.val))
+  }
+
+  @inlinable
+  public func removeAll(key: MutableJSONValue) -> MutableJSONValue? {
+    yyjson_mut_obj_remove(value.val, key.val)
+      .map { MutableJSONValue(val: $0, doc: value.doc) }
+  }
+
+  @inlinable
+  public func removeAll<T: StringProtocol>(string: T) -> MutableJSONValue? {
+    string.withCStringBuffer { keyBuffer in
+      yyjson_mut_obj_remove_strn(value.val, keyBuffer.baseAddress, keyBuffer.count)
+    }
+    .map { MutableJSONValue(val: $0, doc: value.doc) }
+  }
+
+  @inlinable
+  public func removeAll<T: StringProtocol>(key: T) -> MutableJSONValue? {
+    key.withCStringBuffer { keyBuffer in
+      yyjson_mut_obj_remove_keyn(value.val, keyBuffer.baseAddress, keyBuffer.count)
+    }
+    .map { MutableJSONValue(val: $0, doc: value.doc) }
+  }
+
+  @inlinable
+  public func clear() {
+    precondition(yyjson_mut_obj_clear(value.val))
   }
 
   @inlinable

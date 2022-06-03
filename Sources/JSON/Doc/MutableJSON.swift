@@ -59,8 +59,8 @@ public extension MutableJSON {
 
   @inlinable
   func string<T: StringProtocol>(_ value: T) throws -> MutableJSONValue {
-    try value.utf8.withContiguousBuffer { buffer in
-      MutableJSONValue(val: try yyjson_mut_strncpy(doc, .init(OpaquePointer(buffer.baseAddress)), buffer.count).unwrap(JSONError.noMemory), doc: self)
+    try value.withCStringBuffer { buffer in
+      MutableJSONValue(val: try yyjson_mut_strncpy(doc, buffer.baseAddress, buffer.count).unwrap(JSONError.noMemory), doc: self)
     }
   }
 

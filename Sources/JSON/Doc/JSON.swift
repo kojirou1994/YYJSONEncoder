@@ -21,7 +21,7 @@ public extension JSON {
 
   @inlinable
   static func read<T: StringProtocol>(string: T, options: ReadOptions = .none, allocator: JSONAllocator? = nil) throws -> JSON {
-    try string.utf8.withContiguousBuffer { buffer in
+    try string.withCStringBuffer { buffer in
       try read(buffer: UnsafeRawBufferPointer(buffer), options: options, allocator: allocator)
     }
   }

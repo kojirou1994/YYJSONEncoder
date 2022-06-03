@@ -64,12 +64,6 @@ extension JSONValue: JSONValueProtocol {
   }
 
   @inlinable
-  public subscript(keyBuffer: UnsafeBufferPointer<CChar>) -> JSONValue? {
-    yyjson_obj_getn(val, keyBuffer.baseAddress, keyBuffer.count)
-      .map { .init(val: $0, doc: doc) }
-  }
-
-  @inlinable
   public var object: Object? {
     guard isObject else {
       return nil
@@ -192,7 +186,7 @@ extension JSONValue: JSONValueProtocol {
 
 }
 
-extension JSONValue.Array: Collection {
+extension JSONValue.Array: Collection, RandomAccessCollection {
 
   @inlinable
   public func index(after i: Int) -> Int {
@@ -212,6 +206,16 @@ extension JSONValue.Array: Collection {
   @inlinable
   public var endIndex: Int {
     count
+  }
+
+  @inlinable
+  public var first: Element? {
+    yyjson_arr_get_first(value.val).map { JSONValue(val: $0, doc: value.doc) }
+  }
+
+  @inlinable
+  public var last: Element? {
+    yyjson_arr_get_last(value.val).map { JSONValue(val: $0, doc: value.doc) }
   }
 
   @inlinable
@@ -256,7 +260,7 @@ extension JSONValue.Array: Collection {
   }
 }
 
-extension JSONValue.Object: Sequence {
+extension JSONValue.Object: Sequence, JSONObjectProtocol {
 
   @inlinable
   public var count: Int {
@@ -267,8 +271,9 @@ extension JSONValue.Object: Sequence {
   public var underestimatedCount: Int { count }
 
   @inlinable
-  public subscript(key: String) -> JSONValue? {
-    value[key]
+  public subscript(keyBuffer: UnsafeBufferPointer<CChar>) -> JSONValue? {
+    yyjson_obj_getn(value.val, keyBuffer.baseAddress, keyBuffer.count)
+      .map { .init(val: $0, doc: value.doc) }
   }
 
   @inlinable

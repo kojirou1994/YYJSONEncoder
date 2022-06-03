@@ -1,10 +1,10 @@
 import CUtility
 
-public protocol JSONValueProtocol: CustomStringConvertible, Equatable {
+public protocol JSONValueProtocol: JSONObjectProtocol, CustomStringConvertible, Equatable where Value == Self {
 
   associatedtype Array where Array: Collection, Array.Element == Self
 
-  associatedtype Object where Object: Sequence, Object.Element == (key: Self, value: Self)
+  associatedtype Object where Object: Sequence, Object.Element == (key: Self, value: Self), Object: JSONObjectProtocol, Object.Value == Self
 
   // MARK: JSON Pointer
   func value(withPointer pointer: String) -> Self
@@ -14,7 +14,6 @@ public protocol JSONValueProtocol: CustomStringConvertible, Equatable {
   var array: Array? { get }
 
   // MARK: Object API
-  subscript(keyBuffer: UnsafeBufferPointer<CChar>) -> Self? { get }
   var object: Object? { get }
 
   // MARK: Value API
@@ -65,6 +64,11 @@ public protocol JSONValueProtocol: CustomStringConvertible, Equatable {
 public extension JSONValueProtocol {
 
   @inlinable
+  subscript(keyBuffer: UnsafeBufferPointer<CChar>) -> Value? {
+    object?[keyBuffer]
+  }
+
+  @inlinable
   var rawString: String? {
     withRawCStringIfAvailable(String.init)
   }
@@ -74,19 +78,13 @@ public extension JSONValueProtocol {
     withCStringIfAvailable(String.init)
   }
 
-  @inlinable
-  subscript<T: StringProtocol>(key: T) -> Self? {
-    key.utf8.withContiguousBuffer { buffer in
-      buffer.withMemoryRebound(to: CChar.self) { keyBuffer in
-        self[keyBuffer]
-      }
-    }
-  }
-
   @inline(never)
   var description: String {
     if isString {
       return string!
+    }
+    if isBool {
+      return bool!.description
     }
     if isUnsignedInteger {
       return uint64!.description
@@ -95,35 +93,22 @@ public extension JSONValueProtocol {
       return int64!.description
     }
     if isArray {
-      return "Array"
+      return ContiguousArray(array!).description
     }
     if isObject {
-      return "Object"
+      return ContiguousArray(object!).description
     }
+    if isRaw {
+      return rawString!
+    }
+    if isNull {
+      return "Null"
+    }
+    assertionFailure("unknown type?")
     return "Unknown"
   }
 }
 
-public protocol MutableJSONValueProtocol: JSONValueProtocol {
-  subscript(keyBuffer: UnsafeBufferPointer<CChar>) -> Self? { get nonmutating set }
-}
+public protocol MutableJSONValueProtocol: JSONValueProtocol where Array: MutableCollection {
 
-public extension MutableJSONValueProtocol {
-  @inlinable
-  subscript<T: StringProtocol>(key: T) -> Self? {
-    get {
-      key.utf8.withContiguousBuffer { buffer in
-        buffer.withMemoryRebound(to: CChar.self) { keyBuffer in
-          self[keyBuffer]
-        }
-      }
-    }
-    nonmutating set {
-      key.utf8.withContiguousBuffer { buffer in
-        buffer.withMemoryRebound(to: CChar.self) { keyBuffer in
-          self[keyBuffer] = newValue
-        }
-      }
-    }
-  }
 }
