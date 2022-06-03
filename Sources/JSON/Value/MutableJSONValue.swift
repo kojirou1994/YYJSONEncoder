@@ -144,42 +144,34 @@ extension MutableJSONValue: MutableJSONValueProtocol {
     yyjson_mut_is_ctn(val)
   }
 
-  // MARK: Value API
-
   @inlinable
-  public var bool: Bool? {
-    yyjson_mut_get_bool(val)
+  public var unsafeBool: Bool {
+    unsafe_yyjson_get_bool(val)
   }
 
   @inlinable
-  public var uint64: UInt64? {
-    yyjson_mut_get_uint(val)
+  public var unsafeUInt64: UInt64 {
+    unsafe_yyjson_get_uint(val)
   }
 
   @inlinable
-  public var int64: Int64? {
-    yyjson_mut_get_sint(val)
+  public var unsafeInt64: Int64 {
+    unsafe_yyjson_get_sint(val)
   }
 
   @inlinable
-  public var double: Double? {
-    yyjson_mut_get_real(val)
+  public var unsafeDouble: Double {
+    unsafe_yyjson_get_real(val)
   }
 
   @inlinable
-  public func withRawCStringIfAvailable<T>(_ body: (UnsafePointer<CChar>) throws -> T) rethrows -> T? {
-    guard let raw = yyjson_mut_get_raw(val) else {
-      return nil
-    }
-    return try body(raw)
+  public var unsafeRaw: UnsafePointer<CChar> {
+    unsafe_yyjson_get_raw(val)
   }
 
   @inlinable
-  public func withCStringIfAvailable<T>(_ body: (UnsafePointer<CChar>) throws -> T) rethrows -> T? {
-    guard let string = yyjson_mut_get_str(val) else {
-      return nil
-    }
-    return try body(string)
+  public var unsafeString: UnsafePointer<CChar> {
+    unsafe_yyjson_get_str(val)
   }
 
   @inlinable

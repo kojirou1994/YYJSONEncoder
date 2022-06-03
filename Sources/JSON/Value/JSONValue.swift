@@ -146,26 +146,34 @@ extension JSONValue: JSONValueProtocol {
     yyjson_is_ctn(val)
   }
 
-  // MARK: Value API
-
   @inlinable
-  public var bool: Bool? {
-    yyjson_get_bool(val)
+  public var unsafeBool: Bool {
+    unsafe_yyjson_get_bool(val)
   }
 
   @inlinable
-  public var uint64: UInt64? {
-    yyjson_get_uint(val)
+  public var unsafeUInt64: UInt64 {
+    unsafe_yyjson_get_uint(val)
   }
 
   @inlinable
-  public var int64: Int64? {
-    yyjson_get_sint(val)
+  public var unsafeInt64: Int64 {
+    unsafe_yyjson_get_sint(val)
   }
 
   @inlinable
-  public var double: Double? {
-    yyjson_get_real(val)
+  public var unsafeDouble: Double {
+    unsafe_yyjson_get_real(val)
+  }
+
+  @inlinable
+  public var unsafeRaw: UnsafePointer<CChar> {
+    unsafe_yyjson_get_raw(val)
+  }
+
+  @inlinable
+  public var unsafeString: UnsafePointer<CChar> {
+    unsafe_yyjson_get_str(val)
   }
 
   @inlinable

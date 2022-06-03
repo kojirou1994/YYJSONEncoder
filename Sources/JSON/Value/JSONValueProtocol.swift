@@ -47,17 +47,17 @@ public protocol JSONValueProtocol: JSONObjectProtocol, CustomStringConvertible, 
 
   var isContainer: Bool { get }
 
-  var bool: Bool? { get }
+  var unsafeBool: Bool { get }
 
-  var uint64: UInt64? { get }
+  var unsafeUInt64: UInt64 { get }
 
-  var int64: Int64? { get }
+  var unsafeInt64: Int64 { get }
 
-  var double: Double? { get }
+  var unsafeDouble: Double { get }
 
-  func withRawCStringIfAvailable<T>(_ body: (UnsafePointer<CChar>) throws -> T) rethrows -> T?
+  var unsafeRaw: UnsafePointer<CChar> { get }
 
-  func withCStringIfAvailable<T>(_ body: (UnsafePointer<CChar>) throws -> T) rethrows -> T?
+  var unsafeString: UnsafePointer<CChar> { get }
 
   func equals(toString buffer: UnsafeRawBufferPointer) -> Bool
 
@@ -71,13 +71,43 @@ public extension JSONValueProtocol {
   }
 
   @inlinable
+  var bool: Bool? {
+    isBool ? unsafeBool : nil
+  }
+
+  @inlinable
+  var uint64: UInt64? {
+    isUnsignedInteger ? unsafeUInt64 : nil
+  }
+
+  @inlinable
+  var int64: Int64? {
+    isSignedInteger ? unsafeInt64 : nil
+  }
+
+  @inlinable
+  var double: Double? {
+    isDouble ? unsafeDouble : nil
+  }
+
+  @inlinable
+  func withUnsafeRawIfAvailable<T>(_ body: (UnsafePointer<CChar>) throws -> T) rethrows -> T? {
+    isRaw ? try body(unsafeRaw) : nil
+  }
+
+  @inlinable
+  func withUnsafeStringIfAvailable<T>(_ body: (UnsafePointer<CChar>) throws -> T) rethrows -> T? {
+    isString ? try body(unsafeString) : nil
+  }
+
+  @inlinable
   var rawString: String? {
-    withRawCStringIfAvailable(String.init)
+    withUnsafeRawIfAvailable(String.init)
   }
 
   @inlinable
   var string: String? {
-    withCStringIfAvailable(String.init)
+    withUnsafeStringIfAvailable(String.init)
   }
 
   @inlinable
@@ -87,26 +117,26 @@ public extension JSONValueProtocol {
 
   @inline(never)
   var description: String {
-    if isString {
-      return string!
+    if let string = string {
+      return string
     }
-    if isBool {
-      return bool!.description
+    if let bool = bool {
+      return bool.description
     }
-    if isUnsignedInteger {
-      return uint64!.description
+    if let uint64 = uint64 {
+      return uint64.description
     }
-    if isSignedInteger {
-      return int64!.description
+    if let int64 = int64 {
+      return int64.description
     }
-    if isArray {
-      return ContiguousArray(array!).description
+    if let array = array {
+      return ContiguousArray(array).description
     }
-    if isObject {
-      return ContiguousArray(object!).description
+    if let object = object {
+      return ContiguousArray(object).description
     }
-    if isRaw {
-      return rawString!
+    if let rawString = rawString {
+      return rawString
     }
     if isNull {
       return "Null"
