@@ -1,335 +1,312 @@
-import yyjson
 import JSON
-
-public enum YYJSONEncoderError: Error, CustomStringConvertible {
-  case yyjsonWriteError(code: UInt32, message: String)
-  case allocateDoc
-//  case numberOverflow(source: Any, target: Any.Type)
-//  case typeMismatch
-  case nullNonCopyString
-  case unknown
-//  case keyNotFound(CodingKey, DecodingError.Context)
-
-  internal static func yyjsonWriteError(_ error: yyjson_write_err) -> Self {
-    .yyjsonWriteError(code: error.code, message: error.msg.map(String.init(cString:)) ?? "")
-  }
-
-  public var description: String {
-    switch self {
-    case .yyjsonWriteError(code: let code, message: let msg):
-      return "Code: \(code), message: \(msg)"
-//    case .numberOverflow(source: let source, target: let target):
-//      return "Can't convert number \(source) to \(target)"
-//    case .typeMismatch:
-//      return "Type mismatch"
-    default: return ""
-//    case let .keyNotFound(key, context):
-//      return "Key \(key) is not found in context: \(context)"
-    }
-  }
-}
-
-extension YYJSONEncoder {
-  
-}
-
-func writeString(doc: UnsafeMutablePointer<yyjson_doc>, flag: JSON.WriteOptions) throws -> String {
-  var length = 0
-  var error = yyjson_write_err()
-  if let cstr = yyjson_write_opts(doc, flag.rawValue, nil, &length, &error) {
-    let str = String(bytesNoCopy: cstr, length: length, encoding: .utf8, freeWhenDone: true)
-    assert(str != nil, "Why?")
-    if str == nil {
-      throw YYJSONEncoderError.nullNonCopyString
-    }
-    return str!
-  }
-  throw YYJSONEncoderError.yyjsonWriteError(error)
-}
-
-func writeString(doc: UnsafeMutablePointer<yyjson_mut_doc>, flag: JSON.WriteOptions) throws -> String {
-  var length = 0
-  var error = yyjson_write_err()
-  if let cstr = yyjson_mut_write_opts(doc, flag.rawValue, nil, &length, &error) {
-    let str = String(bytesNoCopy: cstr, length: length, encoding: .utf8, freeWhenDone: true)
-    assert(str != nil, "Why?")
-    if str == nil {
-      throw YYJSONEncoderError.nullNonCopyString
-    }
-    return str!
-  }
-  throw YYJSONEncoderError.yyjsonWriteError(error)
-}
-
-private func writeFile(path: UnsafePointer<Int8>, doc: UnsafeMutablePointer<yyjson_doc>?,
-               flag: JSON.WriteOptions, alc: UnsafeMutablePointer<yyjson_alc>?)
-throws {
-  var error = yyjson_write_err()
-  let succ = yyjson_write_file(path, doc, flag.rawValue, alc, &error)
-  if !succ {
-    throw YYJSONEncoderError.yyjsonWriteError(error)
-  }
-}
-
-func writeFile(path: UnsafePointer<Int8>, doc: UnsafeMutablePointer<yyjson_mut_doc>?,
-               flag: JSON.WriteOptions, alc: UnsafeMutablePointer<yyjson_alc>?)
-throws {
-  var error = yyjson_write_err()
-  let succ = yyjson_mut_write_file(path, doc, flag.rawValue, alc, &error)
-  if !succ {
-    throw YYJSONEncoderError.yyjsonWriteError(error)
-  }
-}
 
 public struct YYJSONEncoder {
 
-  public var flag: JSON.WriteOptions
-
-  public init(flag: JSON.WriteOptions = .none) {
-    self.flag = flag
+  public init() {
   }
 
-  public func encode<T>(_ value: T) throws -> String where T : Encodable {
-    let encoder = try _YYJSONEncoder()
+  public func encode<T>(_ value: T) throws -> MutableJSON where T : Encodable {
+    let encoder = try _YYJSONEncoder(doc: .init(), userInfo: .init())
     try value.encode(to: encoder)
 
-    return try writeString(doc: encoder.doc, flag: flag)
+    encoder.doc.root = encoder.result
+    return encoder.doc
   }
 
 }
 
-class _YYJSONEncoder: Encoder {
+final class _YYJSONEncoder: Encoder {
 
-  let doc: UnsafeMutablePointer<yyjson_mut_doc>
+  let doc: MutableJSON
+  var result: MutableJSONValue?
+  let codingPath: [CodingKey]
+  let userInfo: [CodingUserInfoKey: Any]
 
-  init(codingPath: [CodingKey] = []) throws {
-    guard let doc = yyjson_mut_doc_new(nil) else {
-      throw YYJSONEncoderError.allocateDoc
-    }
+  init(doc: MutableJSON, codingPath: [CodingKey] = [], userInfo: [CodingUserInfoKey: Any]) {
     self.doc = doc
     self.codingPath = codingPath
+    self.userInfo = userInfo
   }
 
-  deinit {
-    yyjson_mut_doc_free(doc)
-  }
-
-  var codingPath: [CodingKey]
-
-  var userInfo: [CodingUserInfoKey : Any] { fatalError() }
-
-  func checkRootIsNull() {
-    assert(doc.pointee.root == nil, "The root is not null, this call will overwrite it")
+  func checkResultIsNull() {
+    assert(result == nil, "The result is not null, this call will overwrite it")
   }
 
   func container<Key>(keyedBy type: Key.Type) -> KeyedEncodingContainer<Key> where Key : CodingKey {
-    checkRootIsNull()
-    fatalError()
+    checkResultIsNull()
+
+    let object = try! doc.createObject()
+    result = object
+
+    return .init(_YYJSONKeyedEncodingContainerProtocol(object: object.object!, codingPath: codingPath))
   }
 
   func unkeyedContainer() -> UnkeyedEncodingContainer {
-    checkRootIsNull()
-    let container = try! _YYJSONUnkeyedEncodingContainer(doc: doc, codingPath: codingPath)
-    defer {
-      yyjson_mut_doc_set_root(doc, container.arr)
-    }
-    return container
+    checkResultIsNull()
+    let array = try! doc.createArray()
+    result = array
+
+    return _YYJSONUnkeyedEncodingContainer(array: array.array!, codingPath: codingPath)
   }
 
   func singleValueContainer() -> SingleValueEncodingContainer {
-    checkRootIsNull()
-    fatalError()
+    checkResultIsNull()
+
+    return self
   }
 }
 
+extension _YYJSONEncoder: SingleValueEncodingContainer {
+  func encodeNil() throws {
+    result = try doc.createNull()
+  }
+
+  func encode(_ value: Bool) throws {
+    result = try doc.create(value)
+  }
+
+  func encode(_ value: String) throws {
+    result = try doc.create(value)
+  }
+
+  func encode(_ value: Double) throws {
+    result = try doc.create(value)
+  }
+
+  func encode(_ value: Float) throws {
+    result = try doc.create(Double(value))
+  }
+
+  func encode(_ value: Int) throws {
+    result = try doc.create(Int64(value))
+  }
+
+  func encode(_ value: Int8) throws {
+    result = try doc.create(Int64(value))
+  }
+
+  func encode(_ value: Int16) throws {
+    result = try doc.create(Int64(value))
+  }
+
+  func encode(_ value: Int32) throws {
+    result = try doc.create(Int64(value))
+  }
+
+  func encode(_ value: Int64) throws {
+    result = try doc.create(value)
+  }
+
+  func encode(_ value: UInt) throws {
+    result = try doc.create(UInt64(value))
+  }
+
+  func encode(_ value: UInt8) throws {
+    result = try doc.create(UInt64(value))
+  }
+
+  func encode(_ value: UInt16) throws {
+    result = try doc.create(UInt64(value))
+  }
+
+  func encode(_ value: UInt32) throws {
+    result = try doc.create(UInt64(value))
+  }
+
+  func encode(_ value: UInt64) throws {
+    result = try doc.create(UInt64(value))
+  }
+
+  func encode<T>(_ value: T) throws where T : Encodable {
+    try value.encode(to: self)
+  }
+
+}
+
 struct _YYJSONUnkeyedEncodingContainer: UnkeyedEncodingContainer {
+
+  let array: MutableJSONValue.Array
+  let codingPath: [CodingKey]
+
   mutating func encode(_ value: String) throws {
-    precondition(yyjson_mut_arr_add_strcpy(doc, arr, value))
+    array.append(try array.value.doc.create(value))
   }
 
   mutating func encode(_ value: Double) throws {
-    precondition(yyjson_mut_arr_add_real(doc, arr, value))
+    array.append(try array.value.doc.create(Int64(value)))
   }
 
   mutating func encode(_ value: Float) throws {
-    precondition(yyjson_mut_arr_add_real(doc, arr, Double(value)))
+    array.append(try array.value.doc.create(Double(value)))
   }
 
   mutating func encode(_ value: Int) throws {
-    precondition(yyjson_mut_arr_add_int(doc, arr, Int64(value)))
+    array.append(try array.value.doc.create(Int64(value)))
   }
 
   mutating func encode(_ value: Int8) throws {
-    precondition(yyjson_mut_arr_add_int(doc, arr, Int64(value)))
+    array.append(try array.value.doc.create(Int64(value)))
   }
 
   mutating func encode(_ value: Int16) throws {
-    precondition(yyjson_mut_arr_add_int(doc, arr, Int64(value)))
+    array.append(try array.value.doc.create(Int64(value)))
   }
 
   mutating func encode(_ value: Int32) throws {
-    precondition(yyjson_mut_arr_add_int(doc, arr, Int64(value)))
+    array.append(try array.value.doc.create(Int64(value)))
   }
 
   mutating func encode(_ value: Int64) throws {
-    precondition(yyjson_mut_arr_add_int(doc, arr, Int64(value)))
+    array.append(try array.value.doc.create(value))
   }
 
   mutating func encode(_ value: UInt) throws {
-    precondition(yyjson_mut_arr_add_uint(doc, arr, UInt64(value)))
+    array.append(try array.value.doc.create(UInt64(value)))
   }
 
   mutating func encode(_ value: UInt8) throws {
-    precondition(yyjson_mut_arr_add_uint(doc, arr, UInt64(value)))
+    array.append(try array.value.doc.create(UInt64(value)))
   }
 
   mutating func encode(_ value: UInt16) throws {
-    precondition(yyjson_mut_arr_add_uint(doc, arr, UInt64(value)))
+    array.append(try array.value.doc.create(UInt64(value)))
   }
 
   mutating func encode(_ value: UInt32) throws {
-    precondition(yyjson_mut_arr_add_uint(doc, arr, UInt64(value)))
+    array.append(try array.value.doc.create(UInt64(value)))
   }
 
   mutating func encode(_ value: UInt64) throws {
-    precondition(yyjson_mut_arr_add_uint(doc, arr, UInt64(value)))
+    array.append(try array.value.doc.create(value))
   }
 
   mutating func encode<T>(_ value: T) throws where T : Encodable {
-    
+    let encoder = _YYJSONEncoder(doc: array.value.doc, codingPath: codingPath, userInfo: .init())
+    try value.encode(to: encoder)
+    if let result = encoder.result {
+      array.append(result)
+    }
   }
 
   mutating func encode(_ value: Bool) throws {
-    precondition(yyjson_mut_arr_add_bool(doc, arr, value))
+    array.append(try array.value.doc.create(value))
   }
 
   var count: Int {
-    fatalError()
+    array.count
   }
 
   mutating func encodeNil() throws {
-    precondition(yyjson_mut_arr_add_null(doc, arr))
+    array.append(try array.value.doc.createNull())
   }
 
   mutating func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type) -> KeyedEncodingContainer<NestedKey> where NestedKey : CodingKey {
-    fatalError()
+    let object = try! array.value.doc.createObject()
+
+    return .init(_YYJSONKeyedEncodingContainerProtocol(object: object.object!, codingPath: codingPath))
   }
 
   mutating func nestedUnkeyedContainer() -> UnkeyedEncodingContainer {
-    fatalError()
+    let nested = try! array.value.doc.createArray()
+    array.append(nested)
+    return Self.init(array: nested.array!, codingPath: codingPath)
   }
 
   mutating func superEncoder() -> Encoder {
     fatalError()
   }
-
-
-//  let decoder: _YYJSONDecoder
-//
-//  var ite: yyjson_arr_iter
-  let doc: UnsafeMutablePointer<yyjson_mut_doc>
-  let arr: UnsafeMutablePointer<yyjson_mut_val>
-
-  var codingPath: [CodingKey]
-
-  init(
-//    decoder: _YYJSONDecoder,
-    doc: UnsafeMutablePointer<yyjson_mut_doc>,
-    codingPath: [CodingKey]) throws {
-//    self.decoder = decoder
-    self.doc = doc
-    self.arr = yyjson_mut_arr(doc)!
-    self.codingPath = codingPath
-  }
 }
 
 struct _YYJSONKeyedEncodingContainerProtocol<Key: CodingKey>: KeyedEncodingContainerProtocol {
 
-  let doc: UnsafeMutablePointer<yyjson_mut_doc>
-  let dic: UnsafeMutablePointer<yyjson_mut_val>
+  let object: MutableJSONValue.Object
 
-  var codingPath: [CodingKey]
+  let codingPath: [CodingKey]
 
-  init(
-    //    decoder: _YYJSONDecoder,
-    doc: UnsafeMutablePointer<yyjson_mut_doc>,
-    codingPath: [CodingKey]) throws {
-    //    self.decoder = decoder
-    self.doc = doc
-    self.dic = yyjson_mut_obj(doc)!
-    self.codingPath = codingPath
+  mutating func put(key: Key, value: MutableJSONValue) throws {
+    try object.put(key: object.value.doc.create(key.stringValue), value: value)
   }
 
   mutating func encodeNil(forKey key: Key) throws {
-
+    try put(key: key, value: object.value.doc.createNull())
   }
 
   mutating func encode(_ value: Bool, forKey key: Key) throws {
-
+    try put(key: key, value: object.value.doc.create(value))
   }
 
   mutating func encode(_ value: String, forKey key: Key) throws {
-
+    try put(key: key, value: object.value.doc.create(value))
   }
 
   mutating func encode(_ value: Double, forKey key: Key) throws {
-
+    try put(key: key, value: object.value.doc.create(value))
   }
 
   mutating func encode(_ value: Float, forKey key: Key) throws {
-
+    try put(key: key, value: object.value.doc.create(Double(value)))
   }
 
   mutating func encode(_ value: Int, forKey key: Key) throws {
-
+    try put(key: key, value: object.value.doc.create(Int64(value)))
   }
 
   mutating func encode(_ value: Int8, forKey key: Key) throws {
-
+    try put(key: key, value: object.value.doc.create(Int64(value)))
   }
 
   mutating func encode(_ value: Int16, forKey key: Key) throws {
-
+    try put(key: key, value: object.value.doc.create(Int64(value)))
   }
 
   mutating func encode(_ value: Int32, forKey key: Key) throws {
-
+    try put(key: key, value: object.value.doc.create(Int64(value)))
   }
 
   mutating func encode(_ value: Int64, forKey key: Key) throws {
-
+    try put(key: key, value: object.value.doc.create(value))
   }
 
   mutating func encode(_ value: UInt, forKey key: Key) throws {
-
+    try put(key: key, value: object.value.doc.create(UInt64(value)))
   }
 
   mutating func encode(_ value: UInt8, forKey key: Key) throws {
-
+    try put(key: key, value: object.value.doc.create(UInt64(value)))
   }
 
   mutating func encode(_ value: UInt16, forKey key: Key) throws {
-
+    try put(key: key, value: object.value.doc.create(UInt64(value)))
   }
 
   mutating func encode(_ value: UInt32, forKey key: Key) throws {
-
+    try put(key: key, value: object.value.doc.create(UInt64(value)))
   }
 
   mutating func encode(_ value: UInt64, forKey key: Key) throws {
-
+    try put(key: key, value: object.value.doc.create(value))
   }
 
   mutating func encode<T>(_ value: T, forKey key: Key) throws where T : Encodable {
-
+    let encoder = _YYJSONEncoder(doc: object.value.doc, codingPath: codingPath, userInfo: .init())
+    try value.encode(to: encoder)
+    if let result = encoder.result {
+      try put(key: key, value: result)
+    }
   }
 
   mutating func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> where NestedKey : CodingKey {
-    fatalError()
+    let nested = try! object.value.doc.createObject()
+    try! put(key: key, value: nested)
+
+    return .init(_YYJSONKeyedEncodingContainerProtocol<NestedKey>(object: nested.object!, codingPath: codingPath))
   }
 
   mutating func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer {
-    fatalError()
+    let nested = try! object.value.doc.createArray()
+    try! put(key: key, value: nested)
+
+    return _YYJSONUnkeyedEncodingContainer(array: nested.array!, codingPath: codingPath)
   }
 
   mutating func superEncoder() -> Encoder {
@@ -340,6 +317,4 @@ struct _YYJSONKeyedEncodingContainerProtocol<Key: CodingKey>: KeyedEncodingConta
     fatalError()
   }
 
-
-  
 }

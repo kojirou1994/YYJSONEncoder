@@ -89,7 +89,7 @@ public extension JSONWriteError {
 extension JSONWriteError {
   public struct Code: RawRepresentable {
 
-    public var rawValue: yyjson_write_code
+    public let rawValue: yyjson_write_code
 
     @inlinable
     public init(rawValue: yyjson_write_code) {

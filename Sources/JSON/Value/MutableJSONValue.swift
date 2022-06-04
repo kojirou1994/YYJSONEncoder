@@ -11,8 +11,7 @@ public struct MutableJSONValue {
   @usableFromInline
   internal let val: UnsafeMutablePointer<yyjson_mut_val>
 
-  @usableFromInline
-  internal let doc: MutableJSON
+  public let doc: MutableJSON
 }
 
 extension MutableJSONValue: MutableJSONValueProtocol {
@@ -45,8 +44,7 @@ extension MutableJSONValue: MutableJSONValueProtocol {
       self.value = value
     }
 
-    @usableFromInline
-    let value: MutableJSONValue
+    public let value: MutableJSONValue
   }
   public struct Object {
     @usableFromInline
@@ -55,8 +53,7 @@ extension MutableJSONValue: MutableJSONValueProtocol {
       self.value = value
     }
 
-    @usableFromInline
-    let value: MutableJSONValue
+    public let value: MutableJSONValue
   }
 
   @inlinable
@@ -333,12 +330,12 @@ extension MutableJSONValue.Object: Sequence, JSONObjectProtocol {
 
   @inlinable
   public func add(key: MutableJSONValue, value: MutableJSONValue) {
-    precondition(yyjson_mut_obj_add(value.val, key.val, value.val))
+    precondition(yyjson_mut_obj_add(self.value.val, key.val, value.val))
   }
 
   @inlinable
   public func put(key: MutableJSONValue, value: MutableJSONValue) {
-    precondition(yyjson_mut_obj_put(value.val, key.val, value.val))
+    precondition(yyjson_mut_obj_put(self.value.val, key.val, value.val))
   }
 
   @inlinable
