@@ -15,7 +15,7 @@ public final class MutableJSON {
   }
 
   @usableFromInline
-  let doc: UnsafeMutablePointer<yyjson_mut_doc>
+  internal let doc: UnsafeMutablePointer<yyjson_mut_doc>
 
   @inlinable
   deinit {
