@@ -20,34 +20,34 @@ public final class JSON {
 public extension JSON {
 
   @inlinable
-  static func read<T: StringProtocol>(string: T, options: ReadOptions = .none, allocator: JSONAllocator? = nil) throws -> JSON {
-    try string.withCStringBuffer { buffer in
-      try read(buffer: UnsafeRawBufferPointer(buffer), options: options, allocator: allocator)
+  static func read<T: StringProtocol>(string: T, options: ReadOptions = .none, allocator: JSONAllocator? = nil) -> Result<JSON, JSONReadError> {
+    string.withCStringBuffer { buffer in
+      read(buffer: buffer, options: options, allocator: allocator)
     }
   }
 
   @inlinable
-  static func read(buffer: UnsafeRawBufferPointer, options: ReadOptions = .none, allocator: JSONAllocator? = nil) throws -> JSON {
+  static func read(buffer: UnsafeRawBufferPointer, options: ReadOptions = .none, allocator: JSONAllocator? = nil) -> Result<JSON, JSONReadError> {
     precondition(!options.contains(.inSitu))
-    return try .read(buffer: UnsafeMutableRawBufferPointer(mutating: buffer), options: options, allocator: allocator)
+    return read(buffer: UnsafeMutableRawBufferPointer(mutating: buffer), options: options, allocator: allocator)
   }
 
   @inlinable
-  static func read(buffer: UnsafeMutableRawBufferPointer, options: ReadOptions = .none, allocator: JSONAllocator? = nil) throws -> JSON {
+  static func read(buffer: UnsafeMutableRawBufferPointer, options: ReadOptions = .none, allocator: JSONAllocator? = nil) -> Result<JSON, JSONReadError> {
     var err = yyjson_read_err()
     let doc = withOptionalAllocatorPointer(to: allocator) { allocator in
       yyjson_read_opts(.init(OpaquePointer(buffer.baseAddress)), buffer.count, options.rawValue, allocator, &err)
     }
-    return .init(try doc.unwrap(JSONReadError(err)))
+    return doc.map(JSON.init).map(Result.success) ?? .failure(JSONReadError(err))
   }
 
   @inlinable
-  static func read(path: UnsafePointer<CChar>, options: ReadOptions = .none, allocator: JSONAllocator? = nil) throws -> JSON {
+  static func read(path: UnsafePointer<CChar>, options: ReadOptions = .none, allocator: JSONAllocator? = nil) -> Result<JSON, JSONReadError> {
     var err = yyjson_read_err()
     let doc = withOptionalAllocatorPointer(to: allocator) { allocator in
       yyjson_read_file(path, options.rawValue, allocator, &err)
     }
-    return .init(try doc.unwrap(JSONReadError(err)))
+    return doc.map(JSON.init).map(Result.success) ?? .failure(JSONReadError(err))
   }
 }
 
