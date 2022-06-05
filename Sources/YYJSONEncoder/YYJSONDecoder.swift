@@ -1,16 +1,11 @@
-import yyjson
-import Foundation
 import JSON
+import Precondition
 
 public enum YYJSONDecodeError: Error, CustomStringConvertible {
   case yyjsonReadError(code: UInt32, message: String, position: Int)
   case numberOverflow(source: Any, target: Any.Type)
   case typeMismatch
   case keyNotFound(CodingKey, DecodingError.Context)
-
-  internal static func yyjsonReadError(_ error: yyjson_read_err) -> Self {
-    .yyjsonReadError(code: error.code, message: error.msg.map(String.init(cString:)) ?? "", position: error.pos)
-  }
 
   public var description: String {
     switch self {
@@ -26,21 +21,21 @@ public enum YYJSONDecodeError: Error, CustomStringConvertible {
   }
 }
 
-public struct YYJSONDecoder: Decoder {
+public struct YYJSONDecoder<T: JSONValueProtocol>: Decoder {
 
-  public init(_ root: JSONValue) {
+  public init(_ root: T) {
     self.root = root
     codingPath = .init()
     self.userInfo = .init()
   }
 
-  internal init(root: JSONValue, codingPath: [CodingKey], userInfo: [CodingUserInfoKey : Any]) {
+  internal init(root: T, codingPath: [CodingKey], userInfo: [CodingUserInfoKey : Any]) {
     self.root = root
     self.codingPath = codingPath
     self.userInfo = userInfo
   }
 
-  internal let root: JSONValue
+  internal let root: T
 
   public let codingPath: [CodingKey]
 
@@ -48,12 +43,12 @@ public struct YYJSONDecoder: Decoder {
 
   public func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> where Key : CodingKey {
     precondition(root.isObject)
-    return .init(_YYJSONKeyedDecodingContainer<Key>(decoder: self))
+    return .init(_YYJSONKeyedDecodingContainer<T, Key>(obj: root.object!, codingPath: codingPath, userInfo: userInfo))
   }
 
   public func unkeyedContainer() throws -> UnkeyedDecodingContainer {
     precondition(root.isArray)
-    return _YYJSONUnkeyedDecodingContainer(decoder: self, codingPath: codingPath)
+    return _YYJSONUnkeyedDecodingContainer<T>(arr: root.array!, codingPath: codingPath, userInfo: userInfo)
   }
 
   public func singleValueContainer() throws -> SingleValueDecodingContainer {
@@ -62,19 +57,11 @@ public struct YYJSONDecoder: Decoder {
 
 }
 
-struct _YYJSONKeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
+struct _YYJSONKeyedDecodingContainer<T: JSONValueProtocol, Key: CodingKey>: KeyedDecodingContainerProtocol {
 
-  let decoder: YYJSONDecoder
-  let obj: JSONValue.Object
-
-  init(decoder: YYJSONDecoder) {
-    self.decoder = decoder
-    obj = decoder.root.object!
-  }
-
-  var codingPath: [CodingKey] {
-    decoder.codingPath
-  }
+  let obj: T.Object
+  let codingPath: [CodingKey]
+  let userInfo: [CodingUserInfoKey : Any]
 
   var allKeys: [Key] {
     obj.compactMap { kv in
@@ -82,14 +69,14 @@ struct _YYJSONKeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProt
     }
   }
 
-  func value(for key: Key) throws -> JSONValue {
+  func value(for key: Key) throws -> T {
     try obj[key.stringValue].unwrap(DecodingError.keyNotFound(key, .init(
       codingPath: self.codingPath,
       debugDescription: "No value associated with key \(key) (\"\(key.stringValue)\").")))
   }
 
-  func decoder(for key: Key) throws -> YYJSONDecoder {
-    try .init(root: value(for: key), codingPath: codingPath + CollectionOfOne(key as CodingKey), userInfo: decoder.userInfo)
+  func decoder(for key: Key) throws -> YYJSONDecoder<T> {
+    try .init(root: value(for: key), codingPath: codingPath + CollectionOfOne(key as CodingKey), userInfo: userInfo)
   }
 
   func contains(_ key: Key) -> Bool {
@@ -169,29 +156,30 @@ struct _YYJSONKeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProt
   }
 
   func superDecoder() throws -> Decoder {
-    decoder
+    fatalError()
   }
 
   func superDecoder(forKey key: Key) throws -> Decoder {
-    decoder
+    fatalError()
   }
 
 }
 
-struct _YYJSONUnkeyedDecodingContainer: UnkeyedDecodingContainer {
+struct _YYJSONUnkeyedDecodingContainer<T: JSONValueProtocol>: UnkeyedDecodingContainer {
 
-  let decoder: YYJSONDecoder
+  let arr: T.Array
+  let codingPath: [CodingKey]
+  let userInfo: [CodingUserInfoKey : Any]
 
-  let arr: JSONValue.Array
-  var currentIndex: JSONValue.Array.Index
+  var currentIndex: T.Array.Index
 
-  var codingPath: [CodingKey]
-
-  init(decoder: YYJSONDecoder,
-       codingPath: [CodingKey]) {
-    self.decoder = decoder
+  init(arr: T.Array,
+       codingPath: [CodingKey],
+       userInfo: [CodingUserInfoKey : Any]
+  ) {
+    self.arr = arr
     self.codingPath = codingPath
-    self.arr = decoder.root.array!
+    self.userInfo = userInfo
     self.currentIndex = arr.startIndex
   }
 
@@ -203,7 +191,7 @@ struct _YYJSONUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     currentIndex == arr.endIndex
   }
 
-  mutating func nextElement() throws -> JSONValue {
+  mutating func nextElement() throws -> T {
     guard !isAtEnd else {
 //      throw DecodingError.valueNotFound(
 //        T.self,
@@ -217,8 +205,8 @@ struct _YYJSONUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     return value
   }
 
-  mutating func nextElementDecoder() throws -> YYJSONDecoder {
-    try .init(root: nextElement(), codingPath: codingPath, userInfo: decoder.userInfo)
+  mutating func nextElementDecoder() throws -> YYJSONDecoder<T> {
+    try .init(root: nextElement(), codingPath: codingPath, userInfo: userInfo)
   }
 
   mutating func decodeNil() throws -> Bool {
@@ -294,13 +282,10 @@ struct _YYJSONUnkeyedDecodingContainer: UnkeyedDecodingContainer {
   }
 
   mutating func superDecoder() throws -> Decoder {
-    decoder
+    fatalError()
   }
 
-
 }
-
-import Precondition
 
 extension YYJSONDecoder: SingleValueDecodingContainer {
 
@@ -309,23 +294,27 @@ extension YYJSONDecoder: SingleValueDecodingContainer {
   }
 
   public func decode(_ type: Bool.Type) throws -> Bool {
-    try root.bool.unwrap(YYJSONDecodeError.typeMismatch)
+    try root.bool.unwrap()
   }
 
   public func decode(_ type: String.Type) throws -> String {
-    try root.string.unwrap(YYJSONDecodeError.typeMismatch)
+    try root.string.unwrap()
   }
 
   public func decode(_ type: Double.Type) throws -> Double {
-    try root.double.unwrap(YYJSONDecodeError.typeMismatch)
+    try preconditionOrThrow(root.isNumber)
+    if let v = root.int64 {
+      return Double(v)
+    } else if let v = root.uint64 {
+      return Double(v)
+    } else {
+      return root.unsafeDouble
+    }
   }
 
   public func decode(_ type: Float.Type) throws -> Float {
     let double = try decode(Double.self)
-    if abs(double) <= Double(Float.greatestFiniteMagnitude) {
-      throw YYJSONDecodeError.numberOverflow(source: double, target: Float.self)
-    }
-    return Float(double)
+    return try Float(exactly: double).unwrap(YYJSONDecodeError.numberOverflow(source: double, target: Float.self))
   }
 
   public func decode(_ type: Int.Type) throws -> Int {

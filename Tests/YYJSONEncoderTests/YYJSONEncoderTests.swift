@@ -1,56 +1,69 @@
 import XCTest
-@testable import YYJSONEncoder
-import yyjson
+import YYJSONEncoder
 
 final class YYJSONEncoderTests: XCTestCase {
-  func testExample() throws {
-    struct A: Encodable {
-      let str: String
+
+  struct AutomatedModel<T: Codable & Equatable>: Codable, Equatable {
+    let single: T
+    let unkeyed: [T]
+    let unkeyedNestedUnkeyed: [[T]]
+    let nestedKeyed: NestedKeyed
+
+    struct NestedKeyed: Codable, Equatable {
+      let single: T
+
+      init(_ value: T) {
+        single = value
+      }
     }
 
-    let encoder = YYJSONEncoder()
-    print(try encoder.encode([1,2,3]))
-    //    try encoder.encode(A(str: "A啊"))
+    init(_ value: T) {
+      single = value
+      unkeyed = .init(repeating: value, count: 100)
+      unkeyedNestedUnkeyed = .init(repeating: unkeyed, count: 100)
+      nestedKeyed = .init(value)
+    }
   }
 
-  func testEncodeDoc() throws {
-    let doc = yyjson_mut_doc_new(nil)!
+  func encodeAndDecodeAutomated<T: Codable & Equatable>(_ value: T) throws {
+    // single value
+    try encodeAndDecode(value)
 
-    let encoder = YYJSONEncoder(flag: [.pretty])
-    let arr = yyjson_mut_arr(doc)!
-    /*
-     let doc: UnsafeMutablePointer<yyjson_mut_doc>
-     let arr: UnsafeMutablePointer<yyjson_mut_val>
-     */
+    // unkeyed
+    try encodeAndDecode(Array(repeating: value, count: 100))
 
-    yyjson_mut_arr_add_false(doc, arr)
+    // keyed
+    try encodeAndDecode(AutomatedModel(value))
 
-    let subArr = yyjson_mut_arr_add_arr(doc, arr)!
+  }
 
-    yyjson_mut_arr_add_strcpy(doc, subArr, "ABCD你好")
-    yyjson_mut_arr_add_strcpy(doc, arr, "你好ABCD")
+  func encodeAndDecode<T: Codable & Equatable>(_ value: T) throws {
+    let encoded = try YYJSONEncoder().encode(value)
+    let decoded = try T(from: YYJSONDecoder(XCTUnwrap(encoded.root)))
+    XCTAssertEqual(value, decoded)
 
-    yyjson_mut_doc_set_root(doc, arr)
+    for _ in 1...1_0 {
+      _ = try YYJSONEncoder().encode(value)
+      _ = try T(from: YYJSONDecoder(encoded.root!))
+    }
+  }
 
-    let obj = yyjson_mut_arr_add_obj(doc, arr)!
-    //    let str = "Key" as NSString
-    let rawStr = String(repeating: "Key", count: 1000)
-    //    while true {
-    let str = yyjson_mut_strcpy(doc, rawStr)!
-    yyjson_mut_obj_add_int(doc, obj, str.pointee.uni.str, 1)
-
-    //    var copystr: UnsafeMutablePointer<Int8>!
-    //      copystr = strdup(cstr)
-    //      yyjson_mut_obj_add_int(doc, obj, copystr, 1)
-    //      yyjson_mut_obj_add_int(doc, obj, rawStr, 1)
-    //    }
-
-    let encoded = try writeString(doc: doc, flag: encoder.flag)
-    print(encoded)
-    yyjson_mut_doc_free(doc)
-    //    copystr.deallocate()
-
-    //    print(strlen(copystr))
+  func testCoder() throws {
+    try encodeAndDecodeAutomated(1 as Int8)
+    try encodeAndDecodeAutomated(1 as Int16)
+    try encodeAndDecodeAutomated(1 as Int32)
+    try encodeAndDecodeAutomated(1 as Int64)
+    try encodeAndDecodeAutomated(1 as Int)
+    try encodeAndDecodeAutomated(1 as UInt8)
+    try encodeAndDecodeAutomated(1 as UInt16)
+    try encodeAndDecodeAutomated(1 as UInt32)
+    try encodeAndDecodeAutomated(1 as UInt64)
+    try encodeAndDecodeAutomated(1 as UInt)
+    try encodeAndDecodeAutomated(1 as Float)
+    try encodeAndDecodeAutomated(1 as Double)
+    try encodeAndDecodeAutomated("ABCD")
+    try encodeAndDecodeAutomated(true)
+    try encodeAndDecodeAutomated(false)
   }
 
 }

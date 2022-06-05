@@ -6,9 +6,9 @@ public struct YYJSONEncoder {
   }
 
   public func encode<T>(_ value: T) throws -> MutableJSON where T : Encodable {
-    let encoder = try _YYJSONEncoder(doc: .init(), userInfo: .init())
+    let encoder = try _YYJSONEncoder(doc: .init(), codingPath: .init(), userInfo: .init())
     try value.encode(to: encoder)
-
+    assert(encoder.doc.root == nil)
     encoder.doc.root = encoder.result
     return encoder.doc
   }
@@ -18,11 +18,12 @@ public struct YYJSONEncoder {
 final class _YYJSONEncoder: Encoder {
 
   let doc: MutableJSON
-  var result: MutableJSONValue?
   let codingPath: [CodingKey]
   let userInfo: [CodingUserInfoKey: Any]
 
-  init(doc: MutableJSON, codingPath: [CodingKey] = [], userInfo: [CodingUserInfoKey: Any]) {
+  var result: MutableJSONValue?
+
+  init(doc: MutableJSON, codingPath: [CodingKey], userInfo: [CodingUserInfoKey: Any]) {
     self.doc = doc
     self.codingPath = codingPath
     self.userInfo = userInfo

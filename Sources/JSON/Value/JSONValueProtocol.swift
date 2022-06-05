@@ -2,7 +2,7 @@ import CUtility
 
 public protocol JSONValueProtocol: JSONObjectProtocol, CustomStringConvertible, Equatable where Value == Self {
 
-  associatedtype Array where Array: Collection, Array.Element == Self
+  associatedtype Array where Array: Collection, Array.Element == Self, Array.Index == Int
 
   associatedtype Object where Object: Sequence, Object.Element == (key: Self, value: Self), Object: JSONObjectProtocol, Object.Value == Self
 
@@ -101,7 +101,7 @@ public extension JSONValueProtocol {
   }
 
   @inlinable
-  var rawString: String? {
+  var raw: String? {
     withUnsafeRawIfAvailable(String.init)
   }
 
@@ -135,8 +135,8 @@ public extension JSONValueProtocol {
     if let object = object {
       return ContiguousArray(object).description
     }
-    if let rawString = rawString {
-      return rawString
+    if let raw = raw {
+      return raw
     }
     if isNull {
       return "Null"
