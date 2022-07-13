@@ -197,6 +197,13 @@ extension MutableJSONValue.Array: RangeReplaceableCollection, MutableCollection,
     i + 1
   }
 
+  public func replaceSubrange<C>(_ subrange: Range<Int>, with newElements: C) where C : Collection, MutableJSONValue == C.Element {
+    removeSubrange(subrange)
+    newElements.forEach { newElement in
+      insert(newElement, at: subrange.lowerBound)
+    }
+  }
+
   @inlinable
   public func insert(_ newElement: MutableJSONValue, at i: Int) {
     checkSameDoc(newElement)
