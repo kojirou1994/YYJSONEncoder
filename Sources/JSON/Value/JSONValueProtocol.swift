@@ -149,3 +149,26 @@ public extension JSONValueProtocol {
 public protocol MutableJSONValueProtocol: JSONValueProtocol where Array: MutableCollection {
 
 }
+
+// MARK: equal operators
+public extension JSONValueProtocol {
+  @inlinable
+  static func == (lhs: Self, rhs: Bool) -> Bool {
+    lhs.isBool && lhs.unsafeBool == rhs
+  }
+
+  @inlinable
+  static func == (lhs: Self, rhs: UInt64) -> Bool {
+    lhs.isUnsignedInteger && lhs.unsafeUInt64 == rhs
+  }
+
+  @inlinable
+  static func == (lhs: Self, rhs: Int64) -> Bool {
+    lhs.isSignedInteger && lhs.unsafeInt64 == rhs
+  }
+
+  @inlinable
+  static func == (lhs: Self, rhs: Double) -> Bool {
+    lhs.isDouble && lhs.unsafeDouble == rhs
+  }
+}
