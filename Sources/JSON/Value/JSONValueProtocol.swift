@@ -1,24 +1,15 @@
 import CUtility
 
-public protocol JSONValueProtocol: JSONObjectProtocol, CustomStringConvertible, Equatable where Value == Self {
+public protocol JSONValueProtocol: CustomStringConvertible, Equatable {
 
-  associatedtype Array where Array: Collection, Array.Element == Self, Array.Index == Int
+  associatedtype Array: JSONArrayProtocol where Array.RawValue == Self
 
-  associatedtype Object where Object: Sequence, Object.Element == (key: Self, value: Self), Object: JSONObjectProtocol, Object.Value == Self
-
-  // MARK: JSON Pointer
-  func value(withPointer pointer: UnsafePointer<CChar>) -> Self?
-
-  // MARK: Array API
-  subscript(index: Int) -> Self? { get }
-  var array: Array? { get }
-
-  // MARK: Object API
-  var object: Object? { get }
+  associatedtype Object: JSONObjectProtocol where Object.RawValue == Self
 
   // MARK: Value API
   var typeDescription: StaticCString { get }
 
+  // MARK: Value Type API
   var isRaw: Bool { get }
 
   var isNull: Bool { get }
@@ -47,17 +38,24 @@ public protocol JSONValueProtocol: JSONObjectProtocol, CustomStringConvertible, 
 
   var isContainer: Bool { get }
 
-  var unsafeBool: Bool { get }
+  // MARK: Unsafe Value Getter/Setter
+  func unsafeSetNull()
 
-  var unsafeUInt64: UInt64 { get }
+  var unsafeBool: Bool { get nonmutating set }
 
-  var unsafeInt64: Int64 { get }
+  var unsafeUInt64: UInt64 { get nonmutating set }
 
-  var unsafeDouble: Double { get }
+  var unsafeInt64: Int64 { get nonmutating set }
+
+  var unsafeDouble: Double { get nonmutating set }
 
   var unsafeRaw: UnsafePointer<CChar> { get }
 
   var unsafeString: UnsafePointer<CChar> { get }
+
+  /// Returns the content length (string length in bytes, array size,
+  /// object size), or 0 if the value does not contains length data.
+  var length: Int { get }
 
   func equals(toString buffer: UnsafeRawBufferPointer) -> Bool
 
@@ -66,9 +64,16 @@ public protocol JSONValueProtocol: JSONObjectProtocol, CustomStringConvertible, 
 public extension JSONValueProtocol {
 
   @inlinable
-  subscript(keyBuffer: UnsafeRawBufferPointer) -> Value? {
-    object?[keyBuffer]
+  subscript(key: some StringProtocol) -> Self? {
+    object?[key]
   }
+
+  @inlinable
+  subscript(index: Int) -> Self? {
+    array?.value(at: index)
+  }
+
+  // MARK: Safe Value Getter
 
   @inlinable
   var bool: Bool? {
@@ -111,8 +116,18 @@ public extension JSONValueProtocol {
   }
 
   @inlinable
-  static func == <T: StringProtocol> (value: Self, string: T) -> Bool {
-    string.withCStringBuffer { value.equals(toString: .init($0)) }
+  var array: Array? {
+    .init(rawValue: self)
+  }
+
+  @inlinable
+  var object: Object? {
+    .init(rawValue: self)
+  }
+
+  @inlinable
+  static func == (value: Self, string: some StringProtocol) -> Bool {
+    string.withCStringBuffer(value.equals(toString:))
   }
 
   @inline(never)
@@ -146,7 +161,7 @@ public extension JSONValueProtocol {
   }
 }
 
-public protocol MutableJSONValueProtocol: JSONValueProtocol where Array: MutableCollection {
+public protocol MutableJSONValueProtocol: JSONValueProtocol where Array: MutableCollection, Array: RangeReplaceableCollection {
 
 }
 

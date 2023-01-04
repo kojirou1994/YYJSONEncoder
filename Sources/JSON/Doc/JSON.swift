@@ -21,7 +21,8 @@ public extension JSON {
 
   @inlinable
   static func read<T: StringProtocol>(string: T, options: ReadOptions = .none, allocator: JSONAllocator? = nil) -> Result<JSON, JSONReadError> {
-    string.withCStringBuffer { buffer in
+    precondition(!options.contains(.inSitu))
+    return string.withCStringBuffer { buffer in
       read(buffer: buffer, options: options, allocator: allocator)
     }
   }
@@ -64,7 +65,7 @@ public extension JSON {
 
   @inlinable
   var root: JSONValue? {
-    yyjson_doc_get_root(doc).map { JSONValue(val: $0, doc: self) }
+    yyjson_doc_get_root(doc).map { JSONValue($0, self) }
   }
 
 }
@@ -114,6 +115,8 @@ extension JSON {
     public static var escapeSlashes: Self { .init(rawValue: YYJSON_WRITE_ESCAPE_SLASHES) }
     @_alwaysEmitIntoClient
     public static var allowInfAndNan: Self { .init(rawValue: YYJSON_WRITE_ALLOW_INF_AND_NAN) }
+    @_alwaysEmitIntoClient
+    public static var infAndNanAsNull: Self { .init(rawValue: YYJSON_WRITE_INF_AND_NAN_AS_NULL) }
     @_alwaysEmitIntoClient
     public static var allowInvalidUnicode: Self { .init(rawValue: YYJSON_WRITE_ALLOW_INVALID_UNICODE) }
 

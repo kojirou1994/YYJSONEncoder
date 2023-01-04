@@ -64,8 +64,8 @@ struct _YYJSONKeyedDecodingContainer<T: JSONValueProtocol, Key: CodingKey>: Keye
   let userInfo: [CodingUserInfoKey : Any]
 
   var allKeys: [Key] {
-    obj.compactMap { kv in
-      Key(stringValue: kv.key.string!)
+    obj.compactMap { key in
+      Key(stringValue: key.string!)
     }
   }
 

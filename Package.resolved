@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/kojirou1994/CUtility.git",
       "state" : {
-        "revision" : "1143502f7b80cad866ecd6ff54d7e47736bcbd98",
-        "version" : "0.1.5"
+        "revision" : "acd35be02969988c627a995681350e7d7507a6a1",
+        "version" : "0.2.0"
       }
     },
     {
@@ -23,8 +23,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/ibireme/yyjson.git",
       "state" : {
-        "revision" : "dd17081ce089f1ad7fc2342a3e9829f16dc5f1bb",
-        "version" : "0.5.0"
+        "revision" : "7b210d66cb73536f351e8a82a63508bc77bffd20",
+        "version" : "0.6.0"
       }
     }
   ],

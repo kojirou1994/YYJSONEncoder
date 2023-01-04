@@ -130,59 +130,59 @@ struct _YYJSONUnkeyedEncodingContainer: UnkeyedEncodingContainer {
   let codingPath: [CodingKey]
 
   mutating func encode(_ value: String) throws {
-    array.append(try array.value.doc.create(value))
+    array.append(try array.rawValue.document.create(value))
   }
 
   mutating func encode(_ value: Double) throws {
-    array.append(try array.value.doc.create(Int64(value)))
+    array.append(try array.rawValue.document.create(Int64(value)))
   }
 
   mutating func encode(_ value: Float) throws {
-    array.append(try array.value.doc.create(Double(value)))
+    array.append(try array.rawValue.document.create(Double(value)))
   }
 
   mutating func encode(_ value: Int) throws {
-    array.append(try array.value.doc.create(Int64(value)))
+    array.append(try array.rawValue.document.create(Int64(value)))
   }
 
   mutating func encode(_ value: Int8) throws {
-    array.append(try array.value.doc.create(Int64(value)))
+    array.append(try array.rawValue.document.create(Int64(value)))
   }
 
   mutating func encode(_ value: Int16) throws {
-    array.append(try array.value.doc.create(Int64(value)))
+    array.append(try array.rawValue.document.create(Int64(value)))
   }
 
   mutating func encode(_ value: Int32) throws {
-    array.append(try array.value.doc.create(Int64(value)))
+    array.append(try array.rawValue.document.create(Int64(value)))
   }
 
   mutating func encode(_ value: Int64) throws {
-    array.append(try array.value.doc.create(value))
+    array.append(try array.rawValue.document.create(value))
   }
 
   mutating func encode(_ value: UInt) throws {
-    array.append(try array.value.doc.create(UInt64(value)))
+    array.append(try array.rawValue.document.create(UInt64(value)))
   }
 
   mutating func encode(_ value: UInt8) throws {
-    array.append(try array.value.doc.create(UInt64(value)))
+    array.append(try array.rawValue.document.create(UInt64(value)))
   }
 
   mutating func encode(_ value: UInt16) throws {
-    array.append(try array.value.doc.create(UInt64(value)))
+    array.append(try array.rawValue.document.create(UInt64(value)))
   }
 
   mutating func encode(_ value: UInt32) throws {
-    array.append(try array.value.doc.create(UInt64(value)))
+    array.append(try array.rawValue.document.create(UInt64(value)))
   }
 
   mutating func encode(_ value: UInt64) throws {
-    array.append(try array.value.doc.create(value))
+    array.append(try array.rawValue.document.create(value))
   }
 
   mutating func encode<T>(_ value: T) throws where T : Encodable {
-    let encoder = _YYJSONEncoder(doc: array.value.doc, codingPath: codingPath, userInfo: .init())
+    let encoder = _YYJSONEncoder(doc: array.rawValue.document, codingPath: codingPath, userInfo: .init())
     try value.encode(to: encoder)
     if let result = encoder.result {
       array.append(result)
@@ -190,7 +190,7 @@ struct _YYJSONUnkeyedEncodingContainer: UnkeyedEncodingContainer {
   }
 
   mutating func encode(_ value: Bool) throws {
-    array.append(try array.value.doc.create(value))
+    array.append(try array.rawValue.document.create(value))
   }
 
   var count: Int {
@@ -198,17 +198,17 @@ struct _YYJSONUnkeyedEncodingContainer: UnkeyedEncodingContainer {
   }
 
   mutating func encodeNil() throws {
-    array.append(try array.value.doc.createNull())
+    array.append(try array.rawValue.document.createNull())
   }
 
   mutating func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type) -> KeyedEncodingContainer<NestedKey> where NestedKey : CodingKey {
-    let object = try! array.value.doc.createObject()
+    let object = try! array.rawValue.document.createObject()
 
     return .init(_YYJSONKeyedEncodingContainerProtocol(object: object.object!, codingPath: codingPath))
   }
 
   mutating func nestedUnkeyedContainer() -> UnkeyedEncodingContainer {
-    let nested = try! array.value.doc.createArray()
+    let nested = try! array.rawValue.document.createArray()
     array.append(nested)
     return Self.init(array: nested.array!, codingPath: codingPath)
   }
@@ -225,86 +225,88 @@ struct _YYJSONKeyedEncodingContainerProtocol<Key: CodingKey>: KeyedEncodingConta
   let codingPath: [CodingKey]
 
   mutating func put(key: Key, value: MutableJSONValue) throws {
-    try object.put(key: object.value.doc.create(key.stringValue), value: value)
+    try object.put(key: object.rawValue.document.create(key.stringValue), value: value)
   }
 
   mutating func encodeNil(forKey key: Key) throws {
-    try put(key: key, value: object.value.doc.createNull())
+    try put(key: key, value: object.rawValue.document.createNull())
   }
 
   mutating func encode(_ value: Bool, forKey key: Key) throws {
-    try put(key: key, value: object.value.doc.create(value))
+    try put(key: key, value: object.rawValue.document.create(value))
   }
 
   mutating func encode(_ value: String, forKey key: Key) throws {
-    try put(key: key, value: object.value.doc.create(value))
+    try put(key: key, value: object.rawValue.document.create(value))
   }
 
   mutating func encode(_ value: Double, forKey key: Key) throws {
-    try put(key: key, value: object.value.doc.create(value))
+    try put(key: key, value: object.rawValue.document.create(value))
   }
 
   mutating func encode(_ value: Float, forKey key: Key) throws {
-    try put(key: key, value: object.value.doc.create(Double(value)))
+    try put(key: key, value: object.rawValue.document.create(Double(value)))
   }
 
   mutating func encode(_ value: Int, forKey key: Key) throws {
-    try put(key: key, value: object.value.doc.create(Int64(value)))
+    try put(key: key, value: object.rawValue.document.create(Int64(value)))
   }
 
   mutating func encode(_ value: Int8, forKey key: Key) throws {
-    try put(key: key, value: object.value.doc.create(Int64(value)))
+    try put(key: key, value: object.rawValue.document.create(Int64(value)))
   }
 
   mutating func encode(_ value: Int16, forKey key: Key) throws {
-    try put(key: key, value: object.value.doc.create(Int64(value)))
+    try put(key: key, value: object.rawValue.document.create(Int64(value)))
   }
 
   mutating func encode(_ value: Int32, forKey key: Key) throws {
-    try put(key: key, value: object.value.doc.create(Int64(value)))
+    try put(key: key, value: object.rawValue.document.create(Int64(value)))
   }
 
   mutating func encode(_ value: Int64, forKey key: Key) throws {
-    try put(key: key, value: object.value.doc.create(value))
+    try put(key: key, value: object.rawValue.document.create(value))
   }
 
   mutating func encode(_ value: UInt, forKey key: Key) throws {
-    try put(key: key, value: object.value.doc.create(UInt64(value)))
+    try put(key: key, value: object.rawValue.document.create(UInt64(value)))
   }
 
   mutating func encode(_ value: UInt8, forKey key: Key) throws {
-    try put(key: key, value: object.value.doc.create(UInt64(value)))
+    try put(key: key, value: object.rawValue.document.create(UInt64(value)))
   }
 
   mutating func encode(_ value: UInt16, forKey key: Key) throws {
-    try put(key: key, value: object.value.doc.create(UInt64(value)))
+    try put(key: key, value: object.rawValue.document.create(UInt64(value)))
   }
 
   mutating func encode(_ value: UInt32, forKey key: Key) throws {
-    try put(key: key, value: object.value.doc.create(UInt64(value)))
+    try put(key: key, value: object.rawValue.document.create(UInt64(value)))
   }
 
   mutating func encode(_ value: UInt64, forKey key: Key) throws {
-    try put(key: key, value: object.value.doc.create(value))
+    try put(key: key, value: object.rawValue.document.create(value))
   }
 
   mutating func encode<T>(_ value: T, forKey key: Key) throws where T : Encodable {
-    let encoder = _YYJSONEncoder(doc: object.value.doc, codingPath: codingPath, userInfo: .init())
+//    print("encoding nested: \(value)")
+    let encoder = _YYJSONEncoder(doc: object.rawValue.document, codingPath: codingPath, userInfo: .init())
     try value.encode(to: encoder)
     if let result = encoder.result {
+//      print(result)
       try put(key: key, value: result)
     }
   }
 
   mutating func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> where NestedKey : CodingKey {
-    let nested = try! object.value.doc.createObject()
+    let nested = try! object.rawValue.document.createObject()
     try! put(key: key, value: nested)
 
     return .init(_YYJSONKeyedEncodingContainerProtocol<NestedKey>(object: nested.object!, codingPath: codingPath))
   }
 
   mutating func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer {
-    let nested = try! object.value.doc.createArray()
+    let nested = try! object.rawValue.document.createArray()
     try! put(key: key, value: nested)
 
     return _YYJSONUnkeyedEncodingContainer(array: nested.array!, codingPath: codingPath)
