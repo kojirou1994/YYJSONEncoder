@@ -298,10 +298,10 @@ extension MutableJSONValue.Array: JSONArrayProtocol, MutableCollection, RangeRep
     }
 
     @usableFromInline
-    let array: MutableJSONValue
+    internal let array: MutableJSONValue
 
     @usableFromInline
-    var iter: yyjson_mut_arr_iter
+    internal var iter: yyjson_mut_arr_iter
 
     @inlinable
     public var hasNext: Bool {
@@ -434,8 +434,20 @@ extension MutableJSONValue.Object: JSONObjectProtocol {
     }
 
     @inlinable
+    public mutating func itearate(to keyBuffer: UnsafeRawBufferPointer) -> MutableJSONValue? {
+      yyjson_mut_obj_iter_getn(&iter, keyBuffer.baseAddress, keyBuffer.count)
+        .map { .init($0, object.document) }
+    }
+
+    @inlinable
     public mutating func reset() {
       yyjson_mut_obj_iter_init(object.valPointer, &iter)
+    }
+
+    @inlinable
+    public mutating func removeCurrent() -> MutableJSONValue? {
+      yyjson_mut_obj_iter_remove(&iter)
+        .map { MutableJSONValue($0, object.document) }
     }
 
     @inlinable

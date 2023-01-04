@@ -305,6 +305,12 @@ extension JSONValue.Object: JSONObjectProtocol {
     }
 
     @inlinable
+    public mutating func itearate(to keyBuffer: UnsafeRawBufferPointer) -> JSONValue? {
+      yyjson_obj_iter_getn(&iter, keyBuffer.baseAddress, keyBuffer.count)
+        .map { .init($0, object.document) }
+    }
+
+    @inlinable
     public mutating func reset() {
       yyjson_obj_iter_init(object.valPointer, &iter)
     }

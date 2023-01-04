@@ -47,6 +47,9 @@ public protocol JSONObjectIterator: JSONContainerIterator {
   /// - Parameter key: key retuened from next()
   /// - Returns: the value
   func value(for key: Element) -> Element
+
+  /// Iterates to a specified key and returns the value.
+  mutating func itearate(to keyBuffer: UnsafeRawBufferPointer) -> Element?
 }
 
 public extension JSONObjectIterator {
