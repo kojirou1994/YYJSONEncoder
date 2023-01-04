@@ -8,10 +8,13 @@ public final class MutableJSON {
   }
 
   @inlinable
-  public init(allocator: JSONAllocator? = nil) throws {
-    doc = try withOptionalAllocatorPointer(to: allocator) { allocator in
-      try yyjson_mut_doc_new(allocator).unwrap(JSONError.noMemory)
+  public init?(allocator: JSONAllocator? = nil) {
+    guard let doc = withOptionalAllocatorPointer(to: allocator, { allocator in
+      yyjson_mut_doc_new(allocator)
+    }) else {
+      return nil
     }
+    self.doc = doc
   }
 
   @usableFromInline
@@ -28,120 +31,122 @@ public extension MutableJSON {
   // MARK: Mutable JSON Value Creation API
 
   @inlinable
-  func createNull() throws -> MutableJSONValue {
-    .init(try yyjson_mut_null(doc).unwrap(JSONError.noMemory), self)
+  func createNull() -> MutableJSONValue? {
+    yyjson_mut_null(doc).map { .init($0, self) }
   }
 
   @inlinable
-  func create(_ value: Bool) throws -> MutableJSONValue {
-    .init(try yyjson_mut_bool(doc, value).unwrap(JSONError.noMemory), self)
+  func create(_ value: Bool) -> MutableJSONValue? {
+    yyjson_mut_bool(doc, value).map { .init($0, self) }
   }
 
   @inlinable
-  func create(_ value: UInt64) throws -> MutableJSONValue {
-    .init(try yyjson_mut_uint(doc, value).unwrap(JSONError.noMemory), self)
+  func create(_ value: UInt64) -> MutableJSONValue? {
+    yyjson_mut_uint(doc, value).map { .init($0, self) }
   }
 
   @inlinable
-  func create(_ value: Int64) throws -> MutableJSONValue {
-    .init(try yyjson_mut_sint(doc, value).unwrap(JSONError.noMemory), self)
+  func create(_ value: Int64) -> MutableJSONValue? {
+    yyjson_mut_sint(doc, value).map { .init($0, self) }
   }
 
   @inlinable
-  func create(_ value: Double) throws -> MutableJSONValue {
-    .init(try yyjson_mut_real(doc, value).unwrap(JSONError.noMemory), self)
+  func create(_ value: Double) -> MutableJSONValue? {
+    yyjson_mut_real(doc, value).map { .init($0, self) }
   }
 
   @inlinable
-  func create(stringNoCopy value: UnsafeRawBufferPointer) throws -> MutableJSONValue {
-    .init(try yyjson_mut_strn(doc, value.baseAddress, value.count).unwrap(JSONError.noMemory), self)
+  func create(stringNoCopy value: UnsafeRawBufferPointer) -> MutableJSONValue? {
+    yyjson_mut_strn(doc, value.baseAddress, value.count).map { .init($0, self) }
   }
 
   @inlinable
-  func create<T: StringProtocol>(_ value: T) throws -> MutableJSONValue {
-    try value.withCStringBuffer { buffer in
-      MutableJSONValue(try yyjson_mut_strncpy(doc, buffer.baseAddress, buffer.count).unwrap(JSONError.noMemory), self)
+  func create(_ value: some StringProtocol) -> MutableJSONValue? {
+    value.withCStringBuffer { buffer in
+      yyjson_mut_strncpy(doc, buffer.baseAddress, buffer.count)
+        .map { MutableJSONValue($0, self) }
     }
   }
 
   @inlinable
-  func create(rawNoCopy value: UnsafeRawBufferPointer) throws -> MutableJSONValue {
-    .init(try yyjson_mut_rawn(doc, value.baseAddress, value.count).unwrap(JSONError.noMemory), self)
+  func create(rawNoCopy value: UnsafeRawBufferPointer) -> MutableJSONValue? {
+    yyjson_mut_rawn(doc, value.baseAddress, value.count).map { .init($0, self) }
   }
 
   @inlinable
-  func create<T: StringProtocol>(raw value: T) throws -> MutableJSONValue {
-    try value.withCStringBuffer { buffer in
-      MutableJSONValue(try yyjson_mut_rawncpy(doc, buffer.baseAddress, buffer.count).unwrap(JSONError.noMemory), self)
+  func create(raw value: some StringProtocol) -> MutableJSONValue? {
+    value.withCStringBuffer { buffer in
+      yyjson_mut_rawncpy(doc, buffer.baseAddress, buffer.count)
+        .map { MutableJSONValue($0, self) }
     }
   }
 
   // MARK: Mutable JSON Array Creation API
   @inlinable
-  func createArray() throws -> MutableJSONValue {
-    .init(try yyjson_mut_arr(doc).unwrap(JSONError.noMemory), self)
+  func createArray() -> MutableJSONValue? {
+    yyjson_mut_arr(doc).map { .init($0, self) }
   }
 
   @inlinable
-  func createArray(values: UnsafeBufferPointer<Bool>) throws -> MutableJSONValue {
-    .init(try yyjson_mut_arr_with_bool(doc, values.baseAddress, values.count).unwrap(JSONError.noMemory), self)
+  func createArray(values: UnsafeBufferPointer<Bool>) -> MutableJSONValue? {
+    yyjson_mut_arr_with_bool(doc, values.baseAddress, values.count).map { .init($0, self) }
   }
 
   @inlinable
-  func createArray(values: UnsafeBufferPointer<Int8>) throws -> MutableJSONValue {
-    .init(try yyjson_mut_arr_with_sint8(doc, values.baseAddress, values.count).unwrap(JSONError.noMemory), self)
+  func createArray(values: UnsafeBufferPointer<Int8>) -> MutableJSONValue? {
+    yyjson_mut_arr_with_sint8(doc, values.baseAddress, values.count).map { .init($0, self) }
   }
 
   @inlinable
-  func createArray(values: UnsafeBufferPointer<Int16>) throws -> MutableJSONValue {
-    .init(try yyjson_mut_arr_with_sint16(doc, values.baseAddress, values.count).unwrap(JSONError.noMemory), self)
+  func createArray(values: UnsafeBufferPointer<Int16>) -> MutableJSONValue? {
+    yyjson_mut_arr_with_sint16(doc, values.baseAddress, values.count).map { .init($0, self) }
   }
 
   @inlinable
-  func createArray(values: UnsafeBufferPointer<Int32>) throws -> MutableJSONValue {
-    .init(try yyjson_mut_arr_with_sint32(doc, values.baseAddress, values.count).unwrap(JSONError.noMemory), self)
+  func createArray(values: UnsafeBufferPointer<Int32>) -> MutableJSONValue? {
+    yyjson_mut_arr_with_sint32(doc, values.baseAddress, values.count).map { .init($0, self) }
   }
 
   @inlinable
-  func createArray(values: UnsafeBufferPointer<Int64>) throws -> MutableJSONValue {
-    .init(try yyjson_mut_arr_with_sint64(doc, values.baseAddress, values.count).unwrap(JSONError.noMemory), self)
+  func createArray(values: UnsafeBufferPointer<Int64>) -> MutableJSONValue? {
+    yyjson_mut_arr_with_sint64(doc, values.baseAddress, values.count).map { .init($0, self) }
   }
 
   @inlinable
-  func createArray(values: UnsafeBufferPointer<UInt8>) throws -> MutableJSONValue {
-    .init(try yyjson_mut_arr_with_uint8(doc, values.baseAddress, values.count).unwrap(JSONError.noMemory), self)
+  func createArray(values: UnsafeBufferPointer<UInt8>) -> MutableJSONValue? {
+    yyjson_mut_arr_with_uint8(doc, values.baseAddress, values.count).map { .init($0, self) }
   }
 
   @inlinable
-  func createArray(values: UnsafeBufferPointer<UInt16>) throws -> MutableJSONValue {
-    .init(try yyjson_mut_arr_with_uint16(doc, values.baseAddress, values.count).unwrap(JSONError.noMemory), self)
+  func createArray(values: UnsafeBufferPointer<UInt16>) -> MutableJSONValue? {
+    yyjson_mut_arr_with_uint16(doc, values.baseAddress, values.count).map { .init($0, self) }
   }
 
   @inlinable
-  func createArray(values: UnsafeBufferPointer<UInt32>) throws -> MutableJSONValue {
-    .init(try yyjson_mut_arr_with_uint32(doc, values.baseAddress, values.count).unwrap(JSONError.noMemory), self)
+  func createArray(values: UnsafeBufferPointer<UInt32>) -> MutableJSONValue? {
+    yyjson_mut_arr_with_uint32(doc, values.baseAddress, values.count).map { .init($0, self) }
   }
 
   @inlinable
-  func createArray(values: UnsafeBufferPointer<UInt64>) throws -> MutableJSONValue {
-    .init(try yyjson_mut_arr_with_uint64(doc, values.baseAddress, values.count).unwrap(JSONError.noMemory), self)
+  func createArray(values: UnsafeBufferPointer<UInt64>) -> MutableJSONValue? {
+    yyjson_mut_arr_with_uint64(doc, values.baseAddress, values.count).map { .init($0, self) }
   }
 
   @inlinable
-  func createArray(values: UnsafeBufferPointer<Float>) throws -> MutableJSONValue {
-    .init(try yyjson_mut_arr_with_float(doc, values.baseAddress, values.count).unwrap(JSONError.noMemory), self)
+  func createArray(values: UnsafeBufferPointer<Float>) -> MutableJSONValue? {
+    yyjson_mut_arr_with_float(doc, values.baseAddress, values.count).map { .init($0, self) }
   }
 
   @inlinable
-  func createArray(values: UnsafeBufferPointer<Double>) throws -> MutableJSONValue {
-    .init(try yyjson_mut_arr_with_double(doc, values.baseAddress, values.count).unwrap(JSONError.noMemory), self)
+  func createArray(values: UnsafeBufferPointer<Double>) -> MutableJSONValue? {
+    yyjson_mut_arr_with_double(doc, values.baseAddress, values.count).map { .init($0, self) }
   }
 
   // MARK: Mutable JSON Object Creation API
 
   @inlinable
-  func createObject() throws -> MutableJSONValue {
-    .init(try yyjson_mut_obj(doc).unwrap(JSONError.noMemory), self)
+  func createObject() -> MutableJSONValue? {
+    yyjson_mut_obj(doc).map { .init($0, self) }
   }
 }
 
@@ -160,18 +165,18 @@ public extension MutableJSON {
   }
 
   @inlinable
-  func copy(value: JSONValue) throws -> MutableJSONValue {
-    .init(try yyjson_val_mut_copy(doc, value.valPointer).unwrap(JSONError.noMemory), self)
+  func copy(value: JSONValue) -> MutableJSONValue? {
+    yyjson_val_mut_copy(doc, value.valPointer).map { .init($0, self) }
   }
 
   @inlinable
-  func copy(value: MutableJSONValue) throws -> MutableJSONValue {
-    .init(try yyjson_mut_val_mut_copy(doc, value.valPointer).unwrap(JSONError.noMemory), self)
+  func copy(value: MutableJSONValue) -> MutableJSONValue? {
+    yyjson_mut_val_mut_copy(doc, value.valPointer).map { .init($0, self) }
   }
 
   @inlinable
-  func mergePatched(original: JSONValue, patch: JSONValue) throws -> MutableJSONValue {
-    .init(try yyjson_merge_patch(doc, original.valPointer, patch.valPointer).unwrap(JSONError.noMemory), self)
+  func mergePatched(original: JSONValue, patch: JSONValue) -> MutableJSONValue? {
+    yyjson_merge_patch(doc, original.valPointer, patch.valPointer).map { .init($0, self) }
   }
 
 }
@@ -180,9 +185,9 @@ public extension MutableJSON {
 
 public extension JSON {
   @inlinable
-  func copyMutable(allocator: JSONAllocator? = nil) throws -> MutableJSON {
-    try withOptionalAllocatorPointer(to: allocator) { allocator in
-      try MutableJSON(yyjson_doc_mut_copy(doc, allocator).unwrap(JSONError.noMemory))
+  func copyMutable(allocator: JSONAllocator? = nil) -> MutableJSON? {
+    withOptionalAllocatorPointer(to: allocator) { allocator in
+      yyjson_doc_mut_copy(doc, allocator).map(MutableJSON.init)
     }
   }
 }
@@ -190,16 +195,16 @@ public extension JSON {
 public extension MutableJSON {
 
   @inlinable
-  func copy(allocator: JSONAllocator? = nil) throws -> JSON {
-    try withOptionalAllocatorPointer(to: allocator) { allocator in
-      try JSON(yyjson_mut_doc_imut_copy(doc, allocator).unwrap(JSONError.noMemory))
+  func copy(allocator: JSONAllocator? = nil) -> JSON? {
+    withOptionalAllocatorPointer(to: allocator) { allocator in
+      yyjson_mut_doc_imut_copy(doc, allocator).map(JSON.init)
     }
   }
 
   @inlinable
-  func copyMutable(allocator: JSONAllocator? = nil) throws -> MutableJSON {
-    try withOptionalAllocatorPointer(to: allocator) { allocator in
-      try MutableJSON(yyjson_mut_doc_mut_copy(doc, allocator).unwrap(JSONError.noMemory))
+  func copyMutable(allocator: JSONAllocator? = nil) -> MutableJSON? {
+    withOptionalAllocatorPointer(to: allocator) { allocator in
+      yyjson_mut_doc_mut_copy(doc, allocator).map(MutableJSON.init)
     }
   }
 }
@@ -208,9 +213,9 @@ public extension MutableJSONValue {
   /// Copies and returns a new immutable document. This makes a `deep-copy` on the mutable value.
   /// This function is recursive and may cause a stack overflow if the object level is too deep.
   @inlinable
-  func copy(allocator: JSONAllocator? = nil) throws -> JSON {
-    try withOptionalAllocatorPointer(to: allocator) { allocator in
-      try JSON(yyjson_mut_val_imut_copy(valPointer, allocator).unwrap(JSONError.noMemory))
+  func copy(allocator: JSONAllocator? = nil) -> JSON? {
+    withOptionalAllocatorPointer(to: allocator) { allocator in
+      yyjson_mut_val_imut_copy(valPointer, allocator).map(JSON.init)
     }
   }
 }

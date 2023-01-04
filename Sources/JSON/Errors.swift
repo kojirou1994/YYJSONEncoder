@@ -1,12 +1,6 @@
 import yyjson
 import CUtility
 
-public enum JSONError: Error {
-  case noMemory
-  case bufferTooSmall
-  case patchFail
-}
-
 public struct JSONReadError: Error {
   @inlinable
   internal init(_ err: yyjson_read_err) {

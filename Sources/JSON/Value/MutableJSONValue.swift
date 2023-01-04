@@ -199,8 +199,8 @@ extension MutableJSONValue.Array: JSONArrayProtocol, MutableCollection, RangeRep
 
   @inlinable
   public init() {
-    let doc = try! MutableJSON()
-    self = try! doc.createArray().array!
+    let doc = MutableJSON()!
+    self = doc.createArray()!.array!
   }
 
   public func replaceSubrange<C>(_ subrange: Range<Int>, with newElements: C) where C : Collection, MutableJSONValue == C.Element {

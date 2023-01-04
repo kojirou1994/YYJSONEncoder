@@ -5,14 +5,14 @@ public typealias JSONAllocator = yyjson_alc
 
 extension JSONAllocator {
 
-  /// throws JSONError.bufferTooSmall
+  /// fail if buffer is invalid
   /// - Parameter buffer: pre-allocated buffer
-  public init(buffer: UnsafeMutableRawBufferPointer) throws {
+  public init?(buffer: UnsafeMutableRawBufferPointer) {
     self.init()
-    try preconditionOrThrow(
-      yyjson_alc_pool_init(&self, buffer.baseAddress, buffer.count),
-      JSONError.bufferTooSmall
-    )
+    assert(!buffer.isEmpty)
+    if !yyjson_alc_pool_init(&self, buffer.baseAddress, buffer.count) {
+      return nil
+    }
   }
 }
 
