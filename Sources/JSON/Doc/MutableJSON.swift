@@ -61,11 +61,13 @@ public extension MutableJSON {
   }
 
   @inlinable
+  func create(string value: UnsafeRawBufferPointer) -> MutableJSONValue? {
+    yyjson_mut_strncpy(docPointer, value.baseAddress, value.count).map { .init($0, self) }
+  }
+
+  @inlinable
   func create(_ value: some StringProtocol) -> MutableJSONValue? {
-    value.withCStringBuffer { buffer in
-      yyjson_mut_strncpy(docPointer, buffer.baseAddress, buffer.count)
-        .map { MutableJSONValue($0, self) }
-    }
+    value.withCStringBuffer(create(string:))
   }
 
   @inlinable
@@ -74,11 +76,13 @@ public extension MutableJSON {
   }
 
   @inlinable
+  func create(raw value: UnsafeRawBufferPointer) -> MutableJSONValue? {
+    yyjson_mut_rawncpy(docPointer, value.baseAddress, value.count).map { .init($0, self) }
+  }
+
+  @inlinable
   func create(raw value: some StringProtocol) -> MutableJSONValue? {
-    value.withCStringBuffer { buffer in
-      yyjson_mut_rawncpy(docPointer, buffer.baseAddress, buffer.count)
-        .map { MutableJSONValue($0, self) }
-    }
+    value.withCStringBuffer(create(raw:))
   }
 
   // MARK: Mutable JSON Array Creation API
@@ -186,7 +190,8 @@ public extension MutableJSON {
 public extension JSON {
   @inlinable
   func copyMutable(allocator: JSONAllocator? = nil) -> MutableJSON? {
-    withOptionalAllocatorPointer(to: allocator) { allocator in
+    assert(root != nil)
+    return withOptionalAllocatorPointer(to: allocator) { allocator in
       yyjson_doc_mut_copy(docPointer, allocator).map(MutableJSON.init)
     }
   }
@@ -196,14 +201,16 @@ public extension MutableJSON {
 
   @inlinable
   func copy(allocator: JSONAllocator? = nil) -> JSON? {
-    withOptionalAllocatorPointer(to: allocator) { allocator in
+    assert(root != nil)
+    return withOptionalAllocatorPointer(to: allocator) { allocator in
       yyjson_mut_doc_imut_copy(docPointer, allocator).map(JSON.init)
     }
   }
 
   @inlinable
   func copyMutable(allocator: JSONAllocator? = nil) -> MutableJSON? {
-    withOptionalAllocatorPointer(to: allocator) { allocator in
+    assert(root != nil)
+    return withOptionalAllocatorPointer(to: allocator) { allocator in
       yyjson_mut_doc_mut_copy(docPointer, allocator).map(MutableJSON.init)
     }
   }
