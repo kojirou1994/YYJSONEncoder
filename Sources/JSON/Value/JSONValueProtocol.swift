@@ -106,28 +106,37 @@ public extension JSONValueProtocol {
   }
 
   @inlinable
-  var raw: String? {
-    withUnsafeRawIfAvailable(String.init)
+  func withUnsafeRawBufferIfAvailable<T>(_ body: (UnsafeRawBufferPointer) throws -> T) rethrows -> T? {
+    isRaw ? try body(.init(start: unsafeRaw, count: length)) : nil
   }
 
   @inlinable
-  var string: String? {
-    withUnsafeStringIfAvailable(String.init)
+  func withUnsafeStringBufferIfAvailable<T>(_ body: (UnsafeRawBufferPointer) throws -> T) rethrows -> T? {
+    isString ? try body(.init(start: unsafeString, count: length)) : nil
   }
 
+  /// copied raw
+  @inlinable
+  var raw: String? {
+    withUnsafeRawBufferIfAvailable { String(decoding: $0, as: UTF8.self) }
+  }
+
+  /// copied string
+  @inlinable
+  var string: String? {
+    withUnsafeStringBufferIfAvailable { String(decoding: $0, as: UTF8.self) }
+  }
+
+  /// array representation
   @inlinable
   var array: Array? {
     .init(rawValue: self)
   }
 
+  /// object representation
   @inlinable
   var object: Object? {
     .init(rawValue: self)
-  }
-
-  @inlinable
-  static func == (value: Self, string: some StringProtocol) -> Bool {
-    string.withCStringBuffer(value.equals(toString:))
   }
 
   @inline(never)
@@ -186,6 +195,13 @@ public extension JSONValueProtocol {
   static func == (lhs: Self, rhs: Double) -> Bool {
     lhs.isDouble && lhs.unsafeDouble == rhs
   }
+
+  @inlinable
+  static func == (value: Self, string: some StringProtocol) -> Bool {
+    string.withCStringBuffer(value.equals(toString:))
+  }
+}
+
 // MARK: number convertion
 public extension JSONValueProtocol {
   /// return nil if value is not number or number overflows
