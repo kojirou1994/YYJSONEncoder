@@ -8,7 +8,7 @@ public protocol JSONPointerQueryable {
 extension JSON: JSONPointerQueryable {
   @inlinable
   public func query(jsonPointerBuffer: UnsafeRawBufferPointer) -> JSONValue? {
-    yyjson_doc_get_pointern(doc, jsonPointerBuffer.baseAddress, jsonPointerBuffer.count)
+    yyjson_doc_get_pointern(docPointer, jsonPointerBuffer.baseAddress, jsonPointerBuffer.count)
       .map { JSONValue($0, self) }
   }
 }
@@ -16,7 +16,7 @@ extension JSON: JSONPointerQueryable {
 extension MutableJSON: JSONPointerQueryable {
   @inlinable
   public func query(jsonPointerBuffer: UnsafeRawBufferPointer) -> MutableJSONValue? {
-    yyjson_mut_doc_get_pointern(doc, jsonPointerBuffer.baseAddress, jsonPointerBuffer.count)
+    yyjson_mut_doc_get_pointern(docPointer, jsonPointerBuffer.baseAddress, jsonPointerBuffer.count)
       .map { .init($0, self) }
   }
 }

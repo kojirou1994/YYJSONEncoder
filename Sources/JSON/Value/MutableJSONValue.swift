@@ -370,7 +370,7 @@ extension MutableJSONValue.Object: JSONObjectProtocol {
 
   @inlinable
   public func rename(key: UnsafeRawBufferPointer, newKey: UnsafeRawBufferPointer) -> Bool {
-    yyjson_mut_obj_rename_keyn(rawValue.document.doc, rawValue.valPointer, key.baseAddress, key.count, newKey.baseAddress, newKey.count)
+    yyjson_mut_obj_rename_keyn(rawValue.document.docPointer, rawValue.valPointer, key.baseAddress, key.count, newKey.baseAddress, newKey.count)
   }
 
   @inlinable

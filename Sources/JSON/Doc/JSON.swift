@@ -5,15 +5,15 @@ public final class JSON {
 
   @inlinable
   internal init(_ doc: UnsafeMutablePointer<yyjson_doc>) {
-    self.doc = doc
+    self.docPointer = doc
   }
 
   @usableFromInline
-  let doc: UnsafeMutablePointer<yyjson_doc>
+  let docPointer: UnsafeMutablePointer<yyjson_doc>
 
   @inlinable
   deinit {
-    yyjson_doc_free(doc)
+    yyjson_doc_free(docPointer)
   }
 }
 
@@ -55,17 +55,17 @@ public extension JSON {
 public extension JSON {
   @inlinable
   var readSize: Int {
-    yyjson_doc_get_read_size(doc)
+    yyjson_doc_get_read_size(docPointer)
   }
 
   @inlinable
   var valueCount: Int {
-    yyjson_doc_get_val_count(doc)
+    yyjson_doc_get_val_count(docPointer)
   }
 
   @inlinable
   var root: JSONValue? {
-    yyjson_doc_get_root(doc).map { JSONValue($0, self) }
+    yyjson_doc_get_root(docPointer).map { JSONValue($0, self) }
   }
 
 }
