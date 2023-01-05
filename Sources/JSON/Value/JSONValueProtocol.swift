@@ -186,4 +186,33 @@ public extension JSONValueProtocol {
   static func == (lhs: Self, rhs: Double) -> Bool {
     lhs.isDouble && lhs.unsafeDouble == rhs
   }
+// MARK: number convertion
+public extension JSONValueProtocol {
+  /// return nil if value is not number or number overflows
+  func numberToInteger<T: FixedWidthInteger>(as type: T.Type = T.self) -> T? {
+    if isSignedInteger {
+      return .init(exactly: unsafeInt64)
+    }
+    if isUnsignedInteger {
+      return .init(exactly: unsafeUInt64)
+    }
+    if isDouble {
+      return .init(exactly: unsafeDouble)
+    }
+    return nil
+  }
+
+  /// return nil if value is not number
+  func numberToDouble() -> Double? {
+    if isSignedInteger {
+      return .init(unsafeInt64)
+    }
+    if isUnsignedInteger {
+      return .init(unsafeUInt64)
+    }
+    if isDouble {
+      return unsafeDouble
+    }
+    return nil
+  }
 }
