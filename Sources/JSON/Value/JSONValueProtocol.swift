@@ -67,7 +67,7 @@ public protocol JSONValueProtocol: CustomStringConvertible, Equatable {
 public extension JSONValueProtocol {
 
   @inlinable
-  subscript(key: some StringProtocol) -> Self? {
+  subscript(key: some ContiguousUTF8Bytes) -> Self? {
     object?[key]
   }
 
@@ -205,8 +205,8 @@ public extension JSONValueProtocol {
   }
 
   @inlinable
-  static func == (value: Self, string: some StringProtocol) -> Bool {
-    string.withCStringBuffer(value.equals(toString:))
+  static func == (value: Self, string: some ContiguousUTF8Bytes) -> Bool {
+    string.withContiguousUTF8Bytes(value.equals(toString:))
   }
 }
 

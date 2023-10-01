@@ -367,17 +367,12 @@ extension MutableJSONValue.Object: JSONObjectProtocol {
   }
 
   @inlinable
-  public func rename(key: some StringProtocol, newKey: some StringProtocol) -> Bool {
-    key.withCStringBuffer { key in
-      newKey.withCStringBuffer { newKey in
-        rename(key: key, newKey: newKey)
+  public func rename(key: some ContiguousUTF8Bytes, newKey: some ContiguousUTF8Bytes) -> Bool {
+    key.withContiguousUTF8Bytes { key in
+      newKey.withContiguousUTF8Bytes { newKey in
+        yyjson_mut_obj_rename_keyn(rawValue.document.docPointer, rawValue.valPointer, key.baseAddress, key.count, newKey.baseAddress, newKey.count)
       }
     }
-  }
-
-  @inlinable
-  public func rename(key: UnsafeRawBufferPointer, newKey: UnsafeRawBufferPointer) -> Bool {
-    yyjson_mut_obj_rename_keyn(rawValue.document.docPointer, rawValue.valPointer, key.baseAddress, key.count, newKey.baseAddress, newKey.count)
   }
 
   @inlinable
@@ -387,16 +382,16 @@ extension MutableJSONValue.Object: JSONObjectProtocol {
   }
 
   @inlinable
-  public func removeAll<T: StringProtocol>(string: T) -> MutableJSONValue? {
-    string.withCStringBuffer { keyBuffer in
+  public func removeAll(string: some ContiguousUTF8Bytes) -> MutableJSONValue? {
+    string.withContiguousUTF8Bytes { keyBuffer in
       yyjson_mut_obj_remove_strn(rawValue.valPointer, keyBuffer.baseAddress, keyBuffer.count)
     }
     .map { MutableJSONValue($0, rawValue.document) }
   }
 
   @inlinable
-  public func removeAll<T: StringProtocol>(key: T) -> MutableJSONValue? {
-    key.withCStringBuffer { keyBuffer in
+  public func removeAll(key: some ContiguousUTF8Bytes) -> MutableJSONValue? {
+    key.withContiguousUTF8Bytes { keyBuffer in
       yyjson_mut_obj_remove_keyn(rawValue.valPointer, keyBuffer.baseAddress, keyBuffer.count)
     }
     .map { MutableJSONValue($0, rawValue.document) }

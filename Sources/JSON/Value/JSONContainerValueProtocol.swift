@@ -1,3 +1,5 @@
+import CUtility
+
 public protocol JSONContainerValueProtocol: RawRepresentable, Sequence where RawValue: JSONValueProtocol, Iterator: JSONContainerIterator {
 }
 
@@ -37,8 +39,8 @@ public protocol JSONObjectProtocol: JSONContainerValueProtocol, Sequence where E
 
 public extension JSONObjectProtocol {
   @inlinable
-  subscript(key: some StringProtocol) -> Value? {
-    key.withCStringBuffer(value(for:))
+  subscript(key: some ContiguousUTF8Bytes) -> Value? {
+    key.withContiguousUTF8Bytes(value(for:))
   }
 }
 

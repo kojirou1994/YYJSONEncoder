@@ -68,7 +68,7 @@ extension _YYJSONEncoder: SingleValueEncodingContainer {
   }
 
   func encode(_ value: String) throws {
-    result = try doc.create(value).unwrap()
+    result = try doc.create(string: value).unwrap()
   }
 
   func encode(_ value: Double) throws {
@@ -131,7 +131,7 @@ struct _YYJSONUnkeyedEncodingContainer: UnkeyedEncodingContainer {
   let codingPath: [CodingKey]
 
   mutating func encode(_ value: String) throws {
-    array.append(try array.rawValue.document.create(value).unwrap())
+    array.append(try array.rawValue.document.create(string: value).unwrap())
   }
 
   mutating func encode(_ value: Double) throws {
@@ -226,7 +226,7 @@ struct _YYJSONKeyedEncodingContainerProtocol<Key: CodingKey>: KeyedEncodingConta
   let codingPath: [CodingKey]
 
   mutating func put(key: Key, value: MutableJSONValue) throws {
-    try object.put(key: object.rawValue.document.create(key.stringValue).unwrap(), value: value)
+    try object.put(key: object.rawValue.document.create(string: key.stringValue).unwrap(), value: value)
   }
 
   mutating func encodeNil(forKey key: Key) throws {
@@ -238,7 +238,7 @@ struct _YYJSONKeyedEncodingContainerProtocol<Key: CodingKey>: KeyedEncodingConta
   }
 
   mutating func encode(_ value: String, forKey key: Key) throws {
-    try put(key: key, value: object.rawValue.document.create(value).unwrap())
+    try put(key: key, value: object.rawValue.document.create(string: value).unwrap())
   }
 
   mutating func encode(_ value: Double, forKey key: Key) throws {

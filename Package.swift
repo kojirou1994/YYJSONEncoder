@@ -10,7 +10,7 @@ let package = Package(
   dependencies: [
     .package(url: "https://github.com/ibireme/yyjson.git", .upToNextMinor(from: "0.8.0")),
     .package(url: "https://github.com/kojirou1994/Precondition.git", .upToNextMajor(from: "1.0.0")),
-    .package(url: "https://github.com/kojirou1994/CUtility.git", .upToNextMajor(from: "0.0.1")),
+    .package(url: "https://github.com/kojirou1994/CUtility.git", .upToNextMajor(from: "0.3.0")),
   ],
   targets: [
     .target(

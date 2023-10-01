@@ -1,4 +1,5 @@
 import yyjson
+import CUtility
 import Precondition
 
 public final class MutableJSON {
@@ -59,13 +60,10 @@ public extension MutableJSON {
   }
 
   @inlinable
-  func create(string value: UnsafeRawBufferPointer) -> MutableJSONValue? {
-    yyjson_mut_strncpy(docPointer, value.baseAddress, value.count).map { .init($0, self) }
-  }
-
-  @inlinable
-  func create(_ value: some StringProtocol) -> MutableJSONValue? {
-    value.withCStringBuffer(create(string:))
+  func create(string value: some ContiguousUTF8Bytes) -> MutableJSONValue? {
+    value.withContiguousUTF8Bytes { buffer in
+      yyjson_mut_strncpy(docPointer, buffer.baseAddress, buffer.count)
+    }.map { .init($0, self) }
   }
 
   @inlinable
@@ -74,13 +72,10 @@ public extension MutableJSON {
   }
 
   @inlinable
-  func create(raw value: UnsafeRawBufferPointer) -> MutableJSONValue? {
-    yyjson_mut_rawncpy(docPointer, value.baseAddress, value.count).map { .init($0, self) }
-  }
-
-  @inlinable
-  func create(raw value: some StringProtocol) -> MutableJSONValue? {
-    value.withCStringBuffer(create(raw:))
+  func create(raw value: some ContiguousUTF8Bytes) -> MutableJSONValue? {
+    value.withContiguousUTF8Bytes { buffer in
+      yyjson_mut_rawncpy(docPointer, buffer.baseAddress, buffer.count)
+    }.map { .init($0, self) }
   }
 
   // MARK: Mutable JSON Array Creation API

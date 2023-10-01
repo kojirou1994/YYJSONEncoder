@@ -1,5 +1,6 @@
 import yyjson
 import Precondition
+import CUtility
 
 public final class JSON {
 
@@ -20,16 +21,15 @@ public final class JSON {
 public extension JSON {
 
   @inlinable
-  static func read<T: StringProtocol>(string: T, options: ReadOptions = .none, allocator: UnsafePointer<JSONAllocator>? = nil) -> Result<JSON, JSONReadError> {
-    precondition(!options.contains(.inSitu))
-    return string.withCStringBuffer { buffer in
+  static func read(string: some ContiguousUTF8Bytes, options: ReadOptions = .none, allocator: UnsafePointer<JSONAllocator>? = nil) -> Result<JSON, JSONReadError> {
+    return string.withContiguousUTF8Bytes { buffer in
       read(buffer: buffer, options: options, allocator: allocator)
     }
   }
 
   @inlinable
   static func read(buffer: UnsafeRawBufferPointer, options: ReadOptions = .none, allocator: UnsafePointer<JSONAllocator>? = nil) -> Result<JSON, JSONReadError> {
-    precondition(!options.contains(.inSitu))
+    precondition(!options.contains(.inSitu), "input buffer is immutable")
     return read(buffer: UnsafeMutableRawBufferPointer(mutating: buffer), options: options, allocator: allocator)
   }
 
