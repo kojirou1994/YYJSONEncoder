@@ -71,6 +71,11 @@ public extension JSON {
     yyjson_doc_get_root(docPointer).map { JSONValue($0, self) }
   }
 
+  @inlinable
+  static func maxMemoryUsage(bytesCount: Int, options: ReadOptions = .none) -> Int {
+    yyjson_read_max_memory_usage(bytesCount, options.rawValue)
+  }
+
 }
 
 extension JSON {
