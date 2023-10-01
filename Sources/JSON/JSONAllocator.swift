@@ -7,19 +7,29 @@ extension JSONAllocator {
 
   /// fail if buffer is invalid
   /// - Parameter buffer: pre-allocated buffer
-  public init?(buffer: UnsafeMutableRawBufferPointer) {
-    self.init()
+  public mutating func use(buffer: UnsafeMutableRawBufferPointer) -> Bool {
     assert(!buffer.isEmpty)
-    if !yyjson_alc_pool_init(&self, buffer.baseAddress, buffer.count) {
-      return nil
-    }
+    return yyjson_alc_pool_init(&self, buffer.baseAddress, buffer.count)
   }
 }
 
-@inlinable
-func withOptionalAllocatorPointer<Result>(to alc: JSONAllocator?, _ body: (_ allocator: UnsafePointer<yyjson_alc>?) throws -> Result) rethrows -> Result {
-  if let alc = alc {
-    return try withUnsafePointer(to: alc, body)
+public struct JSONDynamicAllocator: ~Copyable {
+
+  @usableFromInline
+  let allocator: UnsafeMutablePointer<yyjson_alc>
+
+  @inlinable
+  public init() throws {
+    allocator = try yyjson_alc_dyn_new().unwrap("no memory")
   }
-  return try body(nil)
+
+  @inlinable
+  deinit {
+    yyjson_alc_dyn_free(allocator)
+  }
+
+  @inlinable
+  public func withUnsafeAllocatorPointer<Result>(_ body: (_ allocator: UnsafePointer<JSONAllocator>?) throws -> Result) rethrows -> Result {
+    try body(allocator)
+  }
 }

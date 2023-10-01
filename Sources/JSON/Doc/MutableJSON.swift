@@ -8,10 +8,8 @@ public final class MutableJSON {
   }
 
   @inlinable
-  public init?(allocator: JSONAllocator? = nil) {
-    guard let docPointer = withOptionalAllocatorPointer(to: allocator, { allocator in
-      yyjson_mut_doc_new(allocator)
-    }) else {
+  public init?(allocator: UnsafePointer<JSONAllocator>? = nil) {
+    guard let docPointer = yyjson_mut_doc_new(allocator) else {
       return nil
     }
     self.docPointer = docPointer
@@ -189,30 +187,24 @@ public extension MutableJSON {
 
 public extension JSON {
   @inlinable
-  func copyMutable(allocator: JSONAllocator? = nil) -> MutableJSON? {
+  func copyMutable(allocator: UnsafePointer<JSONAllocator>? = nil) -> MutableJSON? {
     assert(root != nil)
-    return withOptionalAllocatorPointer(to: allocator) { allocator in
-      yyjson_doc_mut_copy(docPointer, allocator).map(MutableJSON.init)
-    }
+    return yyjson_doc_mut_copy(docPointer, allocator).map(MutableJSON.init)
   }
 }
 
 public extension MutableJSON {
 
   @inlinable
-  func copy(allocator: JSONAllocator? = nil) -> JSON? {
+  func copy(allocator: UnsafePointer<JSONAllocator>? = nil) -> JSON? {
     assert(root != nil)
-    return withOptionalAllocatorPointer(to: allocator) { allocator in
-      yyjson_mut_doc_imut_copy(docPointer, allocator).map(JSON.init)
-    }
+    return yyjson_mut_doc_imut_copy(docPointer, allocator).map(JSON.init)
   }
 
   @inlinable
-  func copyMutable(allocator: JSONAllocator? = nil) -> MutableJSON? {
+  func copyMutable(allocator: UnsafePointer<JSONAllocator>? = nil) -> MutableJSON? {
     assert(root != nil)
-    return withOptionalAllocatorPointer(to: allocator) { allocator in
-      yyjson_mut_doc_mut_copy(docPointer, allocator).map(MutableJSON.init)
-    }
+    return yyjson_mut_doc_mut_copy(docPointer, allocator).map(MutableJSON.init)
   }
 }
 
@@ -220,9 +212,7 @@ public extension MutableJSONValue {
   /// Copies and returns a new immutable document. This makes a `deep-copy` on the mutable value.
   /// This function is recursive and may cause a stack overflow if the object level is too deep.
   @inlinable
-  func copy(allocator: JSONAllocator? = nil) -> JSON? {
-    withOptionalAllocatorPointer(to: allocator) { allocator in
-      yyjson_mut_val_imut_copy(valPointer, allocator).map(JSON.init)
-    }
+  func copy(allocator: UnsafePointer<JSONAllocator>? = nil) -> JSON? {
+    yyjson_mut_val_imut_copy(valPointer, allocator).map(JSON.init)
   }
 }

@@ -20,7 +20,7 @@ public final class JSON {
 public extension JSON {
 
   @inlinable
-  static func read<T: StringProtocol>(string: T, options: ReadOptions = .none, allocator: JSONAllocator? = nil) -> Result<JSON, JSONReadError> {
+  static func read<T: StringProtocol>(string: T, options: ReadOptions = .none, allocator: UnsafePointer<JSONAllocator>? = nil) -> Result<JSON, JSONReadError> {
     precondition(!options.contains(.inSitu))
     return string.withCStringBuffer { buffer in
       read(buffer: buffer, options: options, allocator: allocator)
@@ -28,35 +28,29 @@ public extension JSON {
   }
 
   @inlinable
-  static func read(buffer: UnsafeRawBufferPointer, options: ReadOptions = .none, allocator: JSONAllocator? = nil) -> Result<JSON, JSONReadError> {
+  static func read(buffer: UnsafeRawBufferPointer, options: ReadOptions = .none, allocator: UnsafePointer<JSONAllocator>? = nil) -> Result<JSON, JSONReadError> {
     precondition(!options.contains(.inSitu))
     return read(buffer: UnsafeMutableRawBufferPointer(mutating: buffer), options: options, allocator: allocator)
   }
 
   @inlinable
-  static func read(buffer: UnsafeMutableRawBufferPointer, options: ReadOptions = .none, allocator: JSONAllocator? = nil) -> Result<JSON, JSONReadError> {
+  static func read(buffer: UnsafeMutableRawBufferPointer, options: ReadOptions = .none, allocator: UnsafePointer<JSONAllocator>? = nil) -> Result<JSON, JSONReadError> {
     var err = yyjson_read_err()
-    let doc = withOptionalAllocatorPointer(to: allocator) { allocator in
-      yyjson_read_opts(.init(OpaquePointer(buffer.baseAddress)), buffer.count, options.rawValue, allocator, &err)
-    }
+    let doc = yyjson_read_opts(.init(OpaquePointer(buffer.baseAddress)), buffer.count, options.rawValue, allocator, &err)
     return doc.map(JSON.init).map(Result.success) ?? .failure(JSONReadError(err))
   }
 
   @inlinable
-  static func read(path: UnsafePointer<CChar>, options: ReadOptions = .none, allocator: JSONAllocator? = nil) -> Result<JSON, JSONReadError> {
+  static func read(path: UnsafePointer<CChar>, options: ReadOptions = .none, allocator: UnsafePointer<JSONAllocator>? = nil) -> Result<JSON, JSONReadError> {
     var err = yyjson_read_err()
-    let doc = withOptionalAllocatorPointer(to: allocator) { allocator in
-      yyjson_read_file(path, options.rawValue, allocator, &err)
-    }
+    let doc = yyjson_read_file(path, options.rawValue, allocator, &err)
     return doc.map(JSON.init).map(Result.success) ?? .failure(JSONReadError(err))
   }
 
   @inlinable
-  static func read(file: UnsafeMutablePointer<FILE>, options: ReadOptions = .none, allocator: JSONAllocator? = nil) -> Result<JSON, JSONReadError> {
+  static func read(file: UnsafeMutablePointer<FILE>, options: ReadOptions = .none, allocator: UnsafePointer<JSONAllocator>? = nil) -> Result<JSON, JSONReadError> {
     var err = yyjson_read_err()
-    let doc = withOptionalAllocatorPointer(to: allocator) { allocator in
-      yyjson_read_fp(file, options.rawValue, allocator, &err)
-    }
+    let doc = yyjson_read_fp(file, options.rawValue, allocator, &err)
     return doc.map(JSON.init).map(Result.success) ?? .failure(JSONReadError(err))
   }
 }

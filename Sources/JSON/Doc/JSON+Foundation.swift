@@ -3,7 +3,7 @@ import protocol Foundation.ContiguousBytes
 public extension JSON {
 
   @inlinable
-  static func read<T>(bytes: T, options: ReadOptions = .none, allocator: JSONAllocator? = nil) -> Result<JSON, JSONReadError> where T: ContiguousBytes {
+  static func read(bytes: some ContiguousBytes, options: ReadOptions = .none, allocator: UnsafePointer<JSONAllocator>? = nil) -> Result<JSON, JSONReadError> {
     bytes.withUnsafeBytes { read(buffer: $0, options: options, allocator: allocator) }
   }
 }
