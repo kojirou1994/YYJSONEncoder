@@ -8,7 +8,7 @@ let package = Package(
     .library(name: "JSON", targets: ["JSON"]),
   ],
   dependencies: [
-    .package(url: "https://github.com/ibireme/yyjson.git", .upToNextMinor(from: "0.6.0")),
+    .package(url: "https://github.com/ibireme/yyjson.git", .upToNextMinor(from: "0.7.0")),
     .package(url: "https://github.com/kojirou1994/Precondition.git", .upToNextMajor(from: "1.0.0")),
     .package(url: "https://github.com/kojirou1994/CUtility.git", .upToNextMajor(from: "0.0.1")),
   ],

@@ -170,6 +170,13 @@ extension JSONValue: JSONValueProtocol {
   }
 
   @inlinable
+  public var unsafeNumber: Double {
+    get {
+      unsafe_yyjson_get_num(valPointer)
+    }
+  }
+
+  @inlinable
   public var unsafeRaw: UnsafePointer<CChar> {
     get {
       unsafe_yyjson_get_raw(valPointer)

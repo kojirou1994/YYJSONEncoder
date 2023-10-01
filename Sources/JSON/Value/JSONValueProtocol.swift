@@ -49,6 +49,9 @@ public protocol JSONValueProtocol: CustomStringConvertible, Equatable {
 
   var unsafeDouble: Double { get nonmutating set }
 
+  /// convert and return any number value as double
+  var unsafeNumber: Double { get }
+
   var unsafeRaw: UnsafePointer<CChar> { get }
 
   var unsafeString: UnsafePointer<CChar> { get }
@@ -93,6 +96,11 @@ public extension JSONValueProtocol {
   @inlinable
   var double: Double? {
     isDouble ? unsafeDouble : nil
+  }
+
+  @inlinable
+  var number: Double? {
+    isNumber ? unsafeNumber : nil
   }
 
   @inlinable
@@ -219,6 +227,7 @@ public extension JSONValueProtocol {
   }
 
   /// return nil if value is not number
+  @available(*, deprecated, message: "use number getter")
   func numberToDouble() -> Double? {
     if isSignedInteger {
       return .init(unsafeInt64)

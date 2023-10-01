@@ -50,6 +50,15 @@ public extension JSON {
     }
     return doc.map(JSON.init).map(Result.success) ?? .failure(JSONReadError(err))
   }
+
+  @inlinable
+  static func read(file: UnsafeMutablePointer<FILE>, options: ReadOptions = .none, allocator: JSONAllocator? = nil) -> Result<JSON, JSONReadError> {
+    var err = yyjson_read_err()
+    let doc = withOptionalAllocatorPointer(to: allocator) { allocator in
+      yyjson_read_fp(file, options.rawValue, allocator, &err)
+    }
+    return doc.map(JSON.init).map(Result.success) ?? .failure(JSONReadError(err))
+  }
 }
 
 public extension JSON {
@@ -94,6 +103,8 @@ extension JSON {
     @_alwaysEmitIntoClient
     public static var numberAsRaw: Self { .init(rawValue: YYJSON_READ_NUMBER_AS_RAW) }
     @_alwaysEmitIntoClient
+    public static var bigNumberAsRaw: Self { .init(rawValue: YYJSON_READ_BIGNUM_AS_RAW) }
+    @_alwaysEmitIntoClient
     public static var allowInvalidUnicode: Self { .init(rawValue: YYJSON_READ_ALLOW_INVALID_UNICODE) }
   }
 
@@ -109,6 +120,8 @@ extension JSON {
     public static var none: Self { .init(rawValue: YYJSON_WRITE_NOFLAG) }
     @_alwaysEmitIntoClient
     public static var pretty: Self { .init(rawValue: YYJSON_WRITE_PRETTY) }
+    @_alwaysEmitIntoClient
+    public static var prettyTwoSpaces: Self { .init(rawValue: YYJSON_WRITE_PRETTY_TWO_SPACES) }
     @_alwaysEmitIntoClient
     public static var escapeUnicode: Self { .init(rawValue: YYJSON_WRITE_ESCAPE_UNICODE) }
     @_alwaysEmitIntoClient
