@@ -131,6 +131,8 @@ extension JSON {
     public static var infAndNanAsNull: Self { .init(rawValue: YYJSON_WRITE_INF_AND_NAN_AS_NULL) }
     @_alwaysEmitIntoClient
     public static var allowInvalidUnicode: Self { .init(rawValue: YYJSON_WRITE_ALLOW_INVALID_UNICODE) }
+    @_alwaysEmitIntoClient
+    public static var newLineAtEnd: Self { .init(rawValue: YYJSON_WRITE_NEWLINE_AT_END) }
 
   }
 }
