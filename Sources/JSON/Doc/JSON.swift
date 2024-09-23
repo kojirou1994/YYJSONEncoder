@@ -2,7 +2,7 @@ import yyjson
 import Precondition
 import CUtility
 
-public final class JSON {
+public final class JSON: @unchecked Sendable {
 
   @inlinable
   internal init(_ doc: UnsafeMutablePointer<yyjson_doc>) {

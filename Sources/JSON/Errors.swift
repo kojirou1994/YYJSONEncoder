@@ -1,7 +1,7 @@
 import yyjson
 import CUtility
 
-public struct JSONReadError: Error {
+public struct JSONReadError: Error, @unchecked Sendable {
   @inlinable
   internal init(_ err: yyjson_read_err) {
     self.err = err
@@ -48,7 +48,7 @@ public extension JSONReadError.Code {
   static var success: Self { .init(rawValue: YYJSON_READ_SUCCESS) }
 }
 
-public struct JSONWriteError: Error {
+public struct JSONWriteError: Error, @unchecked Sendable {
   @inlinable
   internal init(_ err: yyjson_write_err) {
     self.err = err
@@ -97,7 +97,7 @@ public extension JSONWriteError.Code {
   static var success: Self { .init(rawValue: YYJSON_WRITE_SUCCESS) }
 }
 
-public struct JSONPointerError: Error {
+public struct JSONPointerError: Error, @unchecked Sendable {
   @inlinable
   internal init(_ err: yyjson_ptr_err) {
     self.err = err
