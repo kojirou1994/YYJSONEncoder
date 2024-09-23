@@ -1,7 +1,7 @@
 import JSON
 import Precondition
 
-public enum YYJSONDecodeError: Error, CustomStringConvertible {
+public enum YYJSONDecodeError: Error, CustomStringConvertible, @unchecked Sendable {
   case yyjsonReadError(code: UInt32, message: String, position: Int)
   case numberOverflow(source: Any, target: Any.Type)
   case typeMismatch
@@ -143,8 +143,8 @@ struct _YYJSONKeyedDecodingContainer<T: JSONValueProtocol, Key: CodingKey>: Keye
     try decoder(for: key).decode(UInt64.self)
   }
 
-  func decode<T>(_ type: T.Type, forKey key: Key) throws -> T where T : Decodable {
-    try decoder(for: key).decode(T.self)
+  func decode<R>(_ type: R.Type, forKey key: Key) throws -> R where R : Decodable {
+    try decoder(for: key).decode(R.self)
   }
 
   func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type, forKey key: Key) throws -> KeyedDecodingContainer<NestedKey> where NestedKey : CodingKey {
@@ -269,8 +269,8 @@ struct _YYJSONUnkeyedDecodingContainer<T: JSONValueProtocol>: UnkeyedDecodingCon
     try nextElementDecoder().decode(UInt64.self)
   }
 
-  mutating func decode<T>(_ type: T.Type) throws -> T where T : Decodable {
-    try nextElementDecoder().decode(T.self)
+  mutating func decode<R>(_ type: R.Type) throws -> R where R : Decodable {
+    try nextElementDecoder().decode(R.self)
   }
 
   mutating func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type) throws -> KeyedDecodingContainer<NestedKey> where NestedKey : CodingKey {
@@ -357,7 +357,7 @@ extension YYJSONDecoder: SingleValueDecodingContainer {
     try root.convertInteger()
   }
 
-  public func decode<T>(_ type: T.Type) throws -> T where T : Decodable {
+  public func decode<R>(_ type: R.Type) throws -> R where R : Decodable {
     try .init(from: self)
   }
 
@@ -368,8 +368,8 @@ extension JSONValueProtocol {
 
   func convertInteger<Output: FixedWidthInteger>() throws -> Output {
 
-    func convert<Input: FixedWidthInteger, Output: FixedWidthInteger>(_ input: Input) throws -> Output {
-      guard let number = Output(exactly: input) else {
+    func convert<Input: FixedWidthInteger, O: FixedWidthInteger>(_ input: Input) throws -> O {
+      guard let number = O(exactly: input) else {
         throw YYJSONDecodeError.numberOverflow(source: input, target: Output.self)
       }
       return number
