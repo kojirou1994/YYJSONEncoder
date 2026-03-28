@@ -9,10 +9,10 @@ public protocol JSONExportable {
 
 public extension JSONExportable {
   @inlinable
-  func write(options: JSON.WriteOptions) -> Result<LazyCopiedCString, JSONWriteError> {
+  func write(options: JSON.WriteOptions) throws(JSONWriteError) -> DynamicCStringWithLength {
     var length = 0
-    return write(options: options, length: &length, allocator: nil)
-      .map { LazyCopiedCString(cString: $0, forceLength: length, freeWhenDone: true) }
+    let cstr = try write(options: options, length: &length, allocator: nil).get()
+    return .init(cString: .init(cString: cstr), forceLength: length)
   }
 }
 
