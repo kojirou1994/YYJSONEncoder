@@ -7,14 +7,6 @@ public protocol JSONExportable {
   func write(toFile fp: UnsafeMutablePointer<FILE>, options: JSON.WriteOptions, length: UnsafeMutablePointer<Int>?, allocator: UnsafePointer<JSONAllocator>?) -> Result<Void, JSONWriteError>
 }
 
-public extension JSONExportable {
-  @inlinable
-  func write(options: JSON.WriteOptions) throws(JSONWriteError) -> DynamicCStringWithLength {
-    var length = 0
-    let cstr = try write(options: options, length: &length, allocator: nil).get()
-    return .init(cString: .init(cString: cstr), forceLength: length)
-  }
-}
 
 extension JSON: JSONExportable {
   @inlinable
