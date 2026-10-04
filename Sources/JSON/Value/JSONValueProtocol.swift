@@ -67,6 +67,8 @@ public protocol JSONValueProtocol: CustomStringConvertible, Equatable {
   func set(prec: CInt)
 
   func set(noesc: Bool)
+
+  func writeNumber(to string: UnsafeMutablePointer<CChar>)
 }
 
 public extension JSONValueProtocol {

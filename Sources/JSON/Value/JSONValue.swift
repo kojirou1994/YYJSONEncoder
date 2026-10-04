@@ -214,6 +214,11 @@ extension JSONValue: JSONValueProtocol {
   public func set(noesc: Bool) {
     yyjson_set_str_noesc(valPointer, noesc)
   }
+
+  @inlinable
+  public func writeNumber(to string: UnsafeMutablePointer<CChar>) {
+    yyjson_write_number(valPointer, string)
+  }
 }
 
 extension JSONValue.Array: JSONArrayProtocol {

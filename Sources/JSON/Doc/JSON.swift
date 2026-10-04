@@ -107,6 +107,18 @@ extension JSON {
     public static var allowInvalidUnicode: Self { .init(rawValue: YYJSON_READ_ALLOW_INVALID_UNICODE) }
     @_alwaysEmitIntoClient
     public static var allowBOM: Self { .init(rawValue: YYJSON_READ_ALLOW_BOM) }
+    @_alwaysEmitIntoClient
+    public static var allowExtendedNumber: Self { .init(rawValue: YYJSON_READ_ALLOW_EXT_NUMBER) }
+    @_alwaysEmitIntoClient
+    public static var allowExtendedEscape: Self { .init(rawValue: YYJSON_READ_ALLOW_EXT_ESCAPE) }
+    @_alwaysEmitIntoClient
+    public static var allowExtendedWhitespace: Self { .init(rawValue: YYJSON_READ_ALLOW_EXT_WHITESPACE) }
+    @_alwaysEmitIntoClient
+    public static var allowSingleQuotedString: Self { .init(rawValue: YYJSON_READ_ALLOW_SINGLE_QUOTED_STR) }
+    @_alwaysEmitIntoClient
+    public static var allowUnquotedKey: Self { .init(rawValue: YYJSON_READ_ALLOW_UNQUOTED_KEY) }
+    @_alwaysEmitIntoClient
+    public static var allowJSON5: Self { .init(rawValue: YYJSON_READ_JSON5) }
   }
 
   public struct WriteOptions: OptionSet {

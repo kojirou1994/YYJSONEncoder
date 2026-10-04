@@ -1,5 +1,5 @@
 {
-  "originHash" : "a11b83690478cca4898acbadf084aad3509be30acd74f52b9d0a55ce050f1c90",
+  "originHash" : "606a3dcddbd32cacab0bd21e83a6523ca842e1a0a74177979ae5db8e526d195f",
   "pins" : [
     {
       "identity" : "cutility",
@@ -24,8 +24,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/ibireme/yyjson.git",
       "state" : {
-        "revision" : "9e24d6bcead647231f81173cc5c6bb6c097c00e4",
-        "version" : "0.11.1"
+        "revision" : "8b4a38dc994a110abaec8a400615567bd996105f",
+        "version" : "0.12.0"
       }
     }
   ],

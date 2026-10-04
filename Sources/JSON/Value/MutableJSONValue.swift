@@ -213,6 +213,11 @@ extension MutableJSONValue: MutableJSONValueProtocol {
   public func set(noesc: Bool) {
     yyjson_mut_set_str_noesc(valPointer, noesc)
   }
+
+  @inlinable
+  public func writeNumber(to string: UnsafeMutablePointer<CChar>) {
+    yyjson_mut_write_number(valPointer, string)
+  }
 }
 
 
