@@ -147,6 +147,9 @@ extension JSON {
     public static var allowInvalidUnicode: Self { .init(rawValue: YYJSON_WRITE_ALLOW_INVALID_UNICODE) }
     @_alwaysEmitIntoClient
     public static var newLineAtEnd: Self { .init(rawValue: YYJSON_WRITE_NEWLINE_AT_END) }
+    @_alwaysEmitIntoClient
+    public static var lowercaseHex: Self { .init(rawValue: YYJSON_WRITE_LOWERCASE_HEX) }
+
 
     @_alwaysEmitIntoClient
     public static var fpToFloat: Self { .init(rawValue: 1 << (32 - 5)) }
