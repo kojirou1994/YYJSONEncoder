@@ -62,6 +62,11 @@ public protocol JSONValueProtocol: CustomStringConvertible, Equatable {
 
   func equals(toString buffer: UnsafeRawBufferPointer) -> Bool
 
+  func set(fpToFloat: Bool)
+
+  func set(prec: CInt)
+
+  func set(noesc: Bool)
 }
 
 public extension JSONValueProtocol {

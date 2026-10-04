@@ -199,6 +199,20 @@ extension MutableJSONValue: MutableJSONValueProtocol {
     unsafe_yyjson_equals_strn(valPointer, buffer.baseAddress, buffer.count)
   }
 
+  @inlinable
+  public func set(fpToFloat: Bool) {
+    yyjson_mut_set_fp_to_float(valPointer, fpToFloat)
+  }
+
+  @inlinable
+  public func set(prec: CInt) {
+    yyjson_mut_set_fp_to_fixed(valPointer, prec)
+  }
+
+  @inlinable
+  public func set(noesc: Bool) {
+    yyjson_mut_set_str_noesc(valPointer, noesc)
+  }
 }
 
 

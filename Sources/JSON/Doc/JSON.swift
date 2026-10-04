@@ -105,6 +105,8 @@ extension JSON {
     public static var bigNumberAsRaw: Self { .init(rawValue: YYJSON_READ_BIGNUM_AS_RAW) }
     @_alwaysEmitIntoClient
     public static var allowInvalidUnicode: Self { .init(rawValue: YYJSON_READ_ALLOW_INVALID_UNICODE) }
+    @_alwaysEmitIntoClient
+    public static var allowBOM: Self { .init(rawValue: YYJSON_READ_ALLOW_BOM) }
   }
 
   public struct WriteOptions: OptionSet {
@@ -133,6 +135,12 @@ extension JSON {
     public static var allowInvalidUnicode: Self { .init(rawValue: YYJSON_WRITE_ALLOW_INVALID_UNICODE) }
     @_alwaysEmitIntoClient
     public static var newLineAtEnd: Self { .init(rawValue: YYJSON_WRITE_NEWLINE_AT_END) }
+
+    @_alwaysEmitIntoClient
+    public static var fpToFloat: Self { .init(rawValue: 1 << (32 - 5)) }
+
+    @_alwaysEmitIntoClient
+    public static func fpToFixed(_ v: UInt32) -> Self { .init(rawValue: v << (32 - 4)) }
 
   }
 }
