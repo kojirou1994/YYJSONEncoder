@@ -34,12 +34,18 @@ public extension JSONReadError {
 
 extension JSONReadError {
   public struct Code: RawRepresentable {
-    public var rawValue: yyjson_read_code
+    public let rawValue: UInt32
 
     @inlinable
-    public init(rawValue: yyjson_read_code) {
+    public init(rawValue: UInt32) {
       self.rawValue = rawValue
     }
+  }
+}
+
+extension JSONReadError: CustomStringConvertible {
+  public var description: String {
+    "JSONReadError(code: \(code), message: \(message.string)"
   }
 }
 

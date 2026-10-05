@@ -1,301 +1,306 @@
 import yyjson
 import CUtility
 
-public struct JSONValue {
+public struct JSONValue: ~Copyable, ~Escapable {
 
   @usableFromInline
-  internal init(_ valPointer: UnsafeMutablePointer<yyjson_val>, _ document: JSON) {
-    self.valPointer = valPointer
-    self.document = document
+  @_lifetime(borrow rawAddress)
+  internal init(_ rawAddress: UnsafeMutablePointer<yyjson_val>?) {
+    self.rawAddress = rawAddress
   }
 
   @usableFromInline
-  internal let valPointer: UnsafeMutablePointer<yyjson_val>
-
-  @usableFromInline
-  internal let document: JSON
+  internal let rawAddress: UnsafeMutablePointer<yyjson_val>?
 }
 
 extension JSONValue: JSONValueProtocol {
 
   @inlinable
-  public static func == (lhs: Self, rhs: Self) -> Bool {
-    yyjson_equals(lhs.valPointer, rhs.valPointer)
-  }
-
-  public struct Array: RawRepresentable {
-    public init?(rawValue: JSONValue) {
-      guard rawValue.isArray else {
-        return nil
-      }
-      self.rawValue = rawValue
-    }
-    public let rawValue: JSONValue
-  }
-
-  public struct Object: RawRepresentable {
-    public init?(rawValue: JSONValue) {
-      guard rawValue.isObject else {
-        return nil
-      }
-      self.rawValue = rawValue
-    }
-    public let rawValue: JSONValue
+  public var exists: Bool {
+    rawAddress != nil
   }
 
   @inlinable
-  public subscript(index: Int) -> JSONValue? {
-    yyjson_arr_get(valPointer, index)
-      .map { .init($0, document) }
+  public static func == (lhs: borrowing Self, rhs: borrowing Self) -> Bool {
+    yyjson_equals(lhs.rawAddress, rhs.rawAddress)
   }
 
   @inlinable
   public var typeDescription: StaticCString {
-    .init(cString: yyjson_get_type_desc(valPointer))
+    .init(cString: yyjson_get_type_desc(rawAddress))
   }
 
   @inlinable
   public var isRaw: Bool {
-    unsafe_yyjson_is_raw(valPointer)
+    yyjson_is_raw(rawAddress)
   }
 
   @inlinable
   public var isNull: Bool {
-    yyjson_is_null(valPointer)
+    yyjson_is_null(rawAddress)
   }
 
   @inlinable
   public var isTrue: Bool {
-    yyjson_is_true(valPointer)
+    yyjson_is_true(rawAddress)
   }
 
   @inlinable
   public var isFalse: Bool {
-    yyjson_is_false(valPointer)
+    yyjson_is_false(rawAddress)
   }
 
   @inlinable
   public var isBool: Bool {
-    yyjson_is_bool(valPointer)
+    yyjson_is_bool(rawAddress)
   }
 
   @inlinable
   public var isUnsignedInteger: Bool {
-    yyjson_is_uint(valPointer)
+    yyjson_is_uint(rawAddress)
   }
 
   @inlinable
   public var isSignedInteger: Bool {
-    yyjson_is_sint(valPointer)
+    yyjson_is_sint(rawAddress)
   }
 
   @inlinable
   public var isInteger: Bool {
-    yyjson_is_int(valPointer)
+    yyjson_is_int(rawAddress)
   }
 
   @inlinable
   public var isDouble: Bool {
-    yyjson_is_real(valPointer)
+    yyjson_is_real(rawAddress)
   }
 
   @inlinable
   public var isNumber: Bool {
-    yyjson_is_num(valPointer)
+    yyjson_is_num(rawAddress)
   }
 
   @inlinable
   public var isString: Bool {
-    yyjson_is_str(valPointer)
+    yyjson_is_str(rawAddress)
   }
 
   @inlinable
   public var isArray: Bool {
-    yyjson_is_arr(valPointer)
+    yyjson_is_arr(rawAddress)
   }
 
   @inlinable
   public var isObject: Bool {
-    yyjson_is_obj(valPointer)
+    yyjson_is_obj(rawAddress)
   }
 
   @inlinable
   public var isContainer: Bool {
-    yyjson_is_ctn(valPointer)
+    yyjson_is_ctn(rawAddress)
   }
 
   @inlinable
   public func unsafeSetNull() {
-    unsafe_yyjson_set_null(valPointer)
+    unsafe_yyjson_set_null(rawAddress)
   }
 
   @inlinable
   public var unsafeBool: Bool {
     get {
-      unsafe_yyjson_get_bool(valPointer)
+      assert(isBool)
+      return unsafe_yyjson_get_bool(rawAddress)
     }
     nonmutating set {
-      unsafe_yyjson_set_bool(valPointer, newValue)
+      assert(isBool)
+      unsafe_yyjson_set_bool(rawAddress, newValue)
     }
   }
 
   @inlinable
   public var unsafeUInt64: UInt64 {
     get {
-      unsafe_yyjson_get_uint(valPointer)
+      assert(isUnsignedInteger)
+      return unsafe_yyjson_get_uint(rawAddress)
     }
     nonmutating set {
-      unsafe_yyjson_set_uint(valPointer, newValue)
+      assert(isUnsignedInteger)
+      unsafe_yyjson_set_uint(rawAddress, newValue)
     }
   }
 
   @inlinable
   public var unsafeInt64: Int64 {
     get {
-      unsafe_yyjson_get_sint(valPointer)
+      assert(isSignedInteger)
+      return unsafe_yyjson_get_sint(rawAddress)
     }
     nonmutating set {
-      unsafe_yyjson_set_sint(valPointer, newValue)
+      assert(isSignedInteger)
+      unsafe_yyjson_set_sint(rawAddress, newValue)
     }
   }
 
   @inlinable
   public var unsafeDouble: Double {
     get {
-      unsafe_yyjson_get_real(valPointer)
+      assert(isDouble)
+      return unsafe_yyjson_get_real(rawAddress)
     }
     nonmutating set {
-      unsafe_yyjson_set_real(valPointer, newValue)
+      assert(isDouble)
+      unsafe_yyjson_set_real(rawAddress, newValue)
     }
   }
 
   @inlinable
   public var unsafeNumber: Double {
     get {
-      unsafe_yyjson_get_num(valPointer)
+      assert(isNumber)
+      return unsafe_yyjson_get_num(rawAddress)
     }
   }
+
+//  @inlinable
+//  public var unsafeRaw: ReferenceCString {
+//    @_lifetime(borrow self)
+//    get {
+//      assert(isRaw)
+//      return _overrideLifetime(.init(cString: unsafe_yyjson_get_raw(rawAddress)), borrowing: self)
+//    }
+//  }
+//
+//  @inlinable
+//  public var unsafeString: ReferenceCString {
+//    @_lifetime(borrow self)
+//    get {
+//      assert(isString)
+//      return _overrideLifetime(.init(cString: unsafe_yyjson_get_str(rawAddress)), borrowing: self)
+//    }
+//  }
 
   @inlinable
   public var unsafeRaw: UnsafePointer<CChar> {
     get {
-      unsafe_yyjson_get_raw(valPointer)
+      unsafe_yyjson_get_raw(rawAddress)
     }
   }
 
   @inlinable
   public var unsafeString: UnsafePointer<CChar> {
     get {
-      unsafe_yyjson_get_str(valPointer)
+      unsafe_yyjson_get_str(rawAddress)
     }
   }
 
   @inlinable
   public var length: Int {
-    unsafe_yyjson_get_len(valPointer)
+    yyjson_get_len(rawAddress)
   }
 
   @inlinable
-  public func equals(toString buffer: UnsafeRawBufferPointer) -> Bool {
-    unsafe_yyjson_equals_strn(valPointer, buffer.baseAddress, buffer.count)
+  public func equals(to string: UnsafeRawBufferPointer) -> Bool {
+    yyjson_equals_strn(rawAddress, string.baseAddress, string.count)
   }
 
   @inlinable
   public func set(fpToFloat: Bool) {
-    yyjson_set_fp_to_float(valPointer, fpToFloat)
+    yyjson_set_fp_to_float(rawAddress, fpToFloat)
   }
 
   @inlinable
   public func set(prec: CInt) {
-    yyjson_set_fp_to_fixed(valPointer, prec)
+    yyjson_set_fp_to_fixed(rawAddress, prec)
   }
 
   @inlinable
   public func set(noesc: Bool) {
-    yyjson_set_str_noesc(valPointer, noesc)
+    yyjson_set_str_noesc(rawAddress, noesc)
   }
 
   @inlinable
   public func writeNumber(to string: UnsafeMutablePointer<CChar>) {
-    yyjson_write_number(valPointer, string)
+    yyjson_write_number(rawAddress, string)
+  }
+
+  @inlinable
+  @_lifetime(copy self)
+  public subscript(index: Int) -> Self {
+    _overrideLifetime(.init(yyjson_arr_get(rawAddress, index)), copying: self)
+  }
+
+  @inlinable
+  @inline(always)
+  @_lifetime(copy self)
+  public subscript(key: some ContiguousUTF8Bytes) -> Self {
+    _overrideLifetime(.init(key.withContiguousUTF8Bytes { keyBuffer in
+      yyjson_obj_getn(rawAddress, keyBuffer.baseAddress, keyBuffer.count)
+    }), copying: self)
   }
 }
 
-extension JSONValue.Array: JSONArrayProtocol {
+extension JSONValue {
 
-  @inlinable
-  public func value(at idx: Int) -> JSONValue? {
-    yyjson_arr_get(rawValue.valPointer, idx)
-      .map { JSONValue($0, rawValue.document) }
-  }
+  public struct ArrayIterator: ~Copyable, ~Escapable {
+//    @usableFromInline
+//    @_lifetime(copy array)
+//    internal init(_ array: borrowing JSONValue) {
+//      assert(array.isArray)
+//      self.rawAddress = array
+//      self.iter = .init()
+//    }
+//
+//    @usableFromInline
+//    internal let rawAddress: JSONValue
+//
+//    @usableFromInline
+//    internal var iter: yyjson_arr_iter
 
-  @inlinable
-  public subscript(position: Int) -> JSONValue {
-    assert(indices.contains(position))
-    return value(at: position).unsafelyUnwrapped
-  }
+//    @inlinable
+//    public var hasNext: Bool {
+//      @_lifetime(&self)
+//      @_lifetime(self: copy self)
+//      mutating get {
+//        yyjson_arr_iter_has_next(&iter)
+//      }
+//    }
 
-  @inlinable
-  public func makeIterator() -> Iterator {
-    var iter: Iterator = .init(rawValue)
-    iter.reset()
-    return iter
-  }
+//    @inlinable
+//    @_lifetime(&self)
+//    @_lifetime(self: copy self)
+//    public mutating func reset() {
+//      yyjson_arr_iter_init(rawAddress.rawAddress, &iter)
+//    }
 
-  public struct Iterator: JSONContainerIterator {
-    @usableFromInline
-    internal init(_ array: JSONValue) {
-      assert(array.isArray)
-      self.array = array
-      self.iter = .init()
-    }
-
-    @usableFromInline
-    internal let array: JSONValue
-
-    @usableFromInline
-    internal var iter: yyjson_arr_iter
-
-    @inlinable
-    public var hasNext: Bool {
-      var copy = iter
-      return withUnsafeMutablePointer(to: &copy, yyjson_arr_iter_has_next)
-    }
-
-    @inlinable
-    public mutating func reset() {
-      yyjson_arr_iter_init(array.valPointer, &iter)
-    }
-
-    @inlinable
-    public mutating func next() -> JSONValue? {
-      if let val = yyjson_arr_iter_next(&iter) {
-        return .init(val, array.document)
-      }
-      return nil
-    }
+//    @inlinable
+//    @_lifetime(copy self)
+//    public mutating func next() -> JSONValue {
+//      _overrideLifetime(.init(yyjson_arr_iter_next(&iter)), copying: self)
+//    }
 
   }
 
-  @inlinable
-  public var first: JSONValue? {
-    yyjson_arr_get_first(rawValue.valPointer)
-      .map { JSONValue($0, rawValue.document) }
-  }
-
-  @inlinable
-  public var last: JSONValue? {
-    yyjson_arr_get_last(rawValue.valPointer)
-      .map { JSONValue($0, rawValue.document) }
-  }
+//  @inlinable
+//  public var first: JSONValue {
+//    yyjson_arr_get_first(rawValue.valPointer)
+//  }
+//
+//  @inlinable
+//  public var last: JSONValue {
+//    yyjson_arr_get_last(rawValue.valPointer)
+//  }
 }
-
+/*
 extension JSONValue.Object: JSONObjectProtocol {
   @inlinable
   public func value(for keyBuffer: UnsafeRawBufferPointer) -> Value? {
     yyjson_obj_getn(rawValue.valPointer, keyBuffer.baseAddress, keyBuffer.count)
       .map { JSONValue($0, rawValue.document) }
   }
+ @inlinable
+ subscript(key: some ContiguousUTF8Bytes) -> Value? {
+   key.withContiguousUTF8Bytes(value(for:))
+ }
 
   @inlinable
   public func makeIterator() -> Iterator {
@@ -350,3 +355,4 @@ extension JSONValue.Object: JSONObjectProtocol {
   }
 }
 
+*/

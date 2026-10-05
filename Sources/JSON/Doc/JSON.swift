@@ -2,73 +2,82 @@ import yyjson
 import Precondition
 import CUtility
 
-public final class JSON: @unchecked Sendable {
+public struct JSON: ~Copyable {
 
   @inlinable
   internal init(_ doc: UnsafeMutablePointer<yyjson_doc>) {
-    self.docPointer = doc
+    self.rawAddress = doc
   }
 
   @usableFromInline
-  let docPointer: UnsafeMutablePointer<yyjson_doc>
+  let rawAddress: UnsafeMutablePointer<yyjson_doc>
 
   @inlinable
   deinit {
-    yyjson_doc_free(docPointer)
+    yyjson_doc_free(rawAddress)
   }
 }
 
 public extension JSON {
 
   @inlinable
-  static func read(string: some ContiguousUTF8Bytes, options: ReadOptions = .none, allocator: UnsafePointer<JSONAllocator>? = nil) -> Result<JSON, JSONReadError> {
-    return string.withContiguousUTF8Bytes { buffer in
-      read(buffer: buffer, options: options, allocator: allocator)
+  static func read(string: some ContiguousUTF8Bytes, options: ReadOptions = .none) throws(JSONReadError) -> JSON {
+    try string.withContiguousUTF8Bytes { buffer throws(JSONReadError) in
+      try read(buffer: buffer, options: options)
     }
   }
 
   @inlinable
-  static func read(buffer: UnsafeRawBufferPointer, options: ReadOptions = .none, allocator: UnsafePointer<JSONAllocator>? = nil) -> Result<JSON, JSONReadError> {
+  static func read(buffer: UnsafeRawBufferPointer, options: ReadOptions = .none) throws(JSONReadError) -> JSON {
     precondition(!options.contains(.inSitu), "input buffer is immutable")
-    return read(buffer: UnsafeMutableRawBufferPointer(mutating: buffer), options: options, allocator: allocator)
+    return try read(buffer: UnsafeMutableRawBufferPointer(mutating: buffer), options: options)
   }
 
   @inlinable
-  static func read(buffer: UnsafeMutableRawBufferPointer, options: ReadOptions = .none, allocator: UnsafePointer<JSONAllocator>? = nil) -> Result<JSON, JSONReadError> {
+  static func read(buffer: UnsafeMutableRawBufferPointer, options: ReadOptions = .none)  throws(JSONReadError) -> JSON {
     var err = yyjson_read_err()
-    let doc = yyjson_read_opts(.init(OpaquePointer(buffer.baseAddress)), buffer.count, options.rawValue, allocator, &err)
-    return doc.map(JSON.init).map(Result.success) ?? .failure(JSONReadError(err))
+    if let doc = yyjson_read_opts(.init(OpaquePointer(buffer.baseAddress)), buffer.count, options.rawValue, nil, &err) {
+      return .init(doc)
+    }
+    throw JSONReadError(err)
   }
 
   @inlinable
-  static func read(path: UnsafePointer<CChar>, options: ReadOptions = .none, allocator: UnsafePointer<JSONAllocator>? = nil) -> Result<JSON, JSONReadError> {
+  static func read(path: UnsafePointer<CChar>, options: ReadOptions = .none)  throws(JSONReadError) -> JSON {
     var err = yyjson_read_err()
-    let doc = yyjson_read_file(path, options.rawValue, allocator, &err)
-    return doc.map(JSON.init).map(Result.success) ?? .failure(JSONReadError(err))
+    if let doc = yyjson_read_file(path, options.rawValue, nil, &err) {
+      return .init(doc)
+    }
+    throw JSONReadError(err)
   }
 
   @inlinable
-  static func read(file: UnsafeMutablePointer<FILE>, options: ReadOptions = .none, allocator: UnsafePointer<JSONAllocator>? = nil) -> Result<JSON, JSONReadError> {
+  static func read(file: UnsafeMutablePointer<FILE>, options: ReadOptions = .none)  throws(JSONReadError) -> JSON {
     var err = yyjson_read_err()
-    let doc = yyjson_read_fp(file, options.rawValue, allocator, &err)
-    return doc.map(JSON.init).map(Result.success) ?? .failure(JSONReadError(err))
+    if let doc = yyjson_read_fp(file, options.rawValue, nil, &err) {
+      return .init(doc)
+    }
+    throw JSONReadError(err)
   }
 }
 
 public extension JSON {
   @inlinable
   var readSize: Int {
-    yyjson_doc_get_read_size(docPointer)
+    yyjson_doc_get_read_size(rawAddress)
   }
 
   @inlinable
   var valueCount: Int {
-    yyjson_doc_get_val_count(docPointer)
+    yyjson_doc_get_val_count(rawAddress)
   }
 
   @inlinable
-  var root: JSONValue? {
-    yyjson_doc_get_root(docPointer).map { JSONValue($0, self) }
+  var root: JSONValue {
+    @_lifetime(borrow self)
+    get {
+      _overrideLifetime(.init(yyjson_doc_get_root(rawAddress)), borrowing: self)
+    }
   }
 
   @inlinable

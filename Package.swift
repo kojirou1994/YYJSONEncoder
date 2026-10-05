@@ -20,13 +20,18 @@ let package = Package(
         .product(name: "yyjson", package: "yyjson"),
         .product(name: "Precondition", package: "Precondition"),
         .product(name: "CUtility", package: "CUtility"),
-      ]),
-    .target(
-      name: "YYJSONEncoder",
-      dependencies: [
-        "yyjson",
-        "JSON",
-      ]),
+      ],
+      swiftSettings: [
+        .enableExperimentalFeature("LifetimeDependence"),
+        .enableExperimentalFeature("Lifetimes"),
+      ],
+    ),
+//    .target(
+//      name: "YYJSONEncoder",
+//      dependencies: [
+//        "yyjson",
+//        "JSON",
+//      ]),
     .executableTarget(
       name: "ExecC",
       dependencies: [
@@ -40,8 +45,8 @@ let package = Package(
     .testTarget(
       name: "JSONTests",
       dependencies: ["JSON"]),
-    .testTarget(
-      name: "YYJSONEncoderTests",
-      dependencies: ["YYJSONEncoder"]),
+//    .testTarget(
+//      name: "YYJSONEncoderTests",
+//      dependencies: ["YYJSONEncoder"]),
   ]
 )
