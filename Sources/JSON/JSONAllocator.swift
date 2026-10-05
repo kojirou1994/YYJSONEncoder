@@ -9,13 +9,13 @@ public struct JSONAllocator: ~Copyable {
   @usableFromInline
   internal let isDynamic: Bool
 
-  @inlinable
+  @export(implementation)
   init(rawAddress: UnsafeMutablePointer<yyjson_alc>?, isDynamic: Bool) {
     self.rawAddress = rawAddress
     self.isDynamic = isDynamic
   }
 
-  @inlinable
+  @export(implementation)
   deinit {
     if isDynamic {
       yyjson_alc_dyn_free(rawAddress)
@@ -25,17 +25,17 @@ public struct JSONAllocator: ~Copyable {
 
 public extension JSONAllocator {
 
-  @inlinable
+  @export(implementation)
   static var `default`: Self {
     .init(rawAddress: nil, isDynamic: false)
   }
 
-  @inlinable
+  @export(implementation)
   static func dynamic() throws -> Self {
     .init(rawAddress: try yyjson_alc_dyn_new().unwrap("no memory"), isDynamic: true)
   }
 
-  @inlinable
+  @export(implementation)
   static func withCustom(
     malloc: (@convention(c) (UnsafeMutableRawPointer?, Int) -> UnsafeMutableRawPointer?)!,
     realloc: (@convention(c) (UnsafeMutableRawPointer?, UnsafeMutableRawPointer?, Int, Int) -> UnsafeMutableRawPointer?)!,
@@ -52,7 +52,7 @@ public extension JSONAllocator {
 
   /// fail if buffer is invalid
   /// - Parameter buffer: pre-allocated buffer
-  @inlinable
+  @export(implementation)
   static func withPool(
     buffer: UnsafeMutableRawBufferPointer,
     _ body: (borrowing JSONAllocator) -> Void,

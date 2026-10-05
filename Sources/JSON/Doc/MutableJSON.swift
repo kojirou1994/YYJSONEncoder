@@ -8,7 +8,7 @@ public final class MutableJSON {
     self.rawAddress = rawAddress
   }
 
-  @inlinable
+  @export(implementation)
   public init?() {
     guard let rawAddress = yyjson_mut_doc_new(nil) else {
       return nil
@@ -19,7 +19,7 @@ public final class MutableJSON {
   @usableFromInline
   internal let rawAddress: UnsafeMutablePointer<yyjson_mut_doc>
 
-  @inlinable
+  @export(implementation)
   deinit {
     yyjson_mut_doc_free(rawAddress)
   }
@@ -29,49 +29,49 @@ public extension MutableJSON {
 
   // MARK: Mutable JSON Value Creation API
 
-  @inlinable
+  @export(implementation)
   func createNull() -> MutableJSONValue? {
     yyjson_mut_null(rawAddress).map { .init($0, self) }
   }
 
-  @inlinable
+  @export(implementation)
   func create(_ value: Bool) -> MutableJSONValue? {
     yyjson_mut_bool(rawAddress, value).map { .init($0, self) }
   }
 
-  @inlinable
+  @export(implementation)
   func create(_ value: UInt64) -> MutableJSONValue? {
     yyjson_mut_uint(rawAddress, value).map { .init($0, self) }
   }
 
-  @inlinable
+  @export(implementation)
   func create(_ value: Int64) -> MutableJSONValue? {
     yyjson_mut_sint(rawAddress, value).map { .init($0, self) }
   }
 
-  @inlinable
+  @export(implementation)
   func create(_ value: Double) -> MutableJSONValue? {
     yyjson_mut_real(rawAddress, value).map { .init($0, self) }
   }
 
-  @inlinable
+  @export(implementation)
   func create(stringNoCopy value: UnsafeRawBufferPointer) -> MutableJSONValue? {
     yyjson_mut_strn(rawAddress, value.baseAddress, value.count).map { .init($0, self) }
   }
 
-  @inlinable
+  @export(implementation)
   func create(string value: some ContiguousUTF8Bytes) -> MutableJSONValue? {
     value.withContiguousUTF8Bytes { buffer in
       yyjson_mut_strncpy(rawAddress, buffer.baseAddress, buffer.count)
     }.map { .init($0, self) }
   }
 
-  @inlinable
+  @export(implementation)
   func create(rawNoCopy value: UnsafeRawBufferPointer) -> MutableJSONValue? {
     yyjson_mut_rawn(rawAddress, value.baseAddress, value.count).map { .init($0, self) }
   }
 
-  @inlinable
+  @export(implementation)
   func create(raw value: some ContiguousUTF8Bytes) -> MutableJSONValue? {
     value.withContiguousUTF8Bytes { buffer in
       yyjson_mut_rawncpy(rawAddress, buffer.baseAddress, buffer.count)
@@ -79,69 +79,69 @@ public extension MutableJSON {
   }
 
   // MARK: Mutable JSON Array Creation API
-  @inlinable
+  @export(implementation)
   func createArray() -> MutableJSONValue? {
     yyjson_mut_arr(rawAddress).map { .init($0, self) }
   }
 
-  @inlinable
+  @export(implementation)
   func createArray(values: UnsafeBufferPointer<Bool>) -> MutableJSONValue? {
     yyjson_mut_arr_with_bool(rawAddress, values.baseAddress, values.count).map { .init($0, self) }
   }
 
-  @inlinable
+  @export(implementation)
   func createArray(values: UnsafeBufferPointer<Int8>) -> MutableJSONValue? {
     yyjson_mut_arr_with_sint8(rawAddress, values.baseAddress, values.count).map { .init($0, self) }
   }
 
-  @inlinable
+  @export(implementation)
   func createArray(values: UnsafeBufferPointer<Int16>) -> MutableJSONValue? {
     yyjson_mut_arr_with_sint16(rawAddress, values.baseAddress, values.count).map { .init($0, self) }
   }
 
-  @inlinable
+  @export(implementation)
   func createArray(values: UnsafeBufferPointer<Int32>) -> MutableJSONValue? {
     yyjson_mut_arr_with_sint32(rawAddress, values.baseAddress, values.count).map { .init($0, self) }
   }
 
-  @inlinable
+  @export(implementation)
   func createArray(values: UnsafeBufferPointer<Int64>) -> MutableJSONValue? {
     yyjson_mut_arr_with_sint64(rawAddress, values.baseAddress, values.count).map { .init($0, self) }
   }
 
-  @inlinable
+  @export(implementation)
   func createArray(values: UnsafeBufferPointer<UInt8>) -> MutableJSONValue? {
     yyjson_mut_arr_with_uint8(rawAddress, values.baseAddress, values.count).map { .init($0, self) }
   }
 
-  @inlinable
+  @export(implementation)
   func createArray(values: UnsafeBufferPointer<UInt16>) -> MutableJSONValue? {
     yyjson_mut_arr_with_uint16(rawAddress, values.baseAddress, values.count).map { .init($0, self) }
   }
 
-  @inlinable
+  @export(implementation)
   func createArray(values: UnsafeBufferPointer<UInt32>) -> MutableJSONValue? {
     yyjson_mut_arr_with_uint32(rawAddress, values.baseAddress, values.count).map { .init($0, self) }
   }
 
-  @inlinable
+  @export(implementation)
   func createArray(values: UnsafeBufferPointer<UInt64>) -> MutableJSONValue? {
     yyjson_mut_arr_with_uint64(rawAddress, values.baseAddress, values.count).map { .init($0, self) }
   }
 
-  @inlinable
+  @export(implementation)
   func createArray(values: UnsafeBufferPointer<Float>) -> MutableJSONValue? {
     yyjson_mut_arr_with_float(rawAddress, values.baseAddress, values.count).map { .init($0, self) }
   }
 
-  @inlinable
+  @export(implementation)
   func createArray(values: UnsafeBufferPointer<Double>) -> MutableJSONValue? {
     yyjson_mut_arr_with_double(rawAddress, values.baseAddress, values.count).map { .init($0, self) }
   }
 
   // MARK: Mutable JSON Object Creation API
 
-  @inlinable
+  @export(implementation)
   func createObject() -> MutableJSONValue? {
     yyjson_mut_obj(rawAddress).map { .init($0, self) }
   }
@@ -149,7 +149,7 @@ public extension MutableJSON {
 
 public extension MutableJSON {
 
-  @inlinable
+  @export(implementation)
   var root: MutableJSONValue? {
     get {
       yyjson_mut_doc_get_root(rawAddress)
@@ -161,17 +161,17 @@ public extension MutableJSON {
     }
   }
 
-  @inlinable
+  @export(implementation)
   func copy(value: borrowing JSONValue) -> MutableJSONValue? {
     yyjson_val_mut_copy(rawAddress, value.rawAddress).map { .init($0, self) }
   }
 
-  @inlinable
+  @export(implementation)
   func copy(value: MutableJSONValue) -> MutableJSONValue? {
     yyjson_mut_val_mut_copy(rawAddress, value.rawAddress).map { .init($0, self) }
   }
 
-  @inlinable
+  @export(implementation)
   func mergePatched(original: borrowing JSONValue, patch: borrowing JSONValue) -> MutableJSONValue? {
     yyjson_merge_patch(rawAddress, original.rawAddress, patch.rawAddress).map { .init($0, self) }
   }
@@ -181,7 +181,7 @@ public extension MutableJSON {
 // MARK: Document Convertions
 
 public extension JSON {
-  @inlinable
+  @export(implementation)
   func copyMutable() -> MutableJSON? {
     assert(root.exists)
     return yyjson_doc_mut_copy(rawAddress, nil).map(MutableJSON.init)
@@ -190,13 +190,13 @@ public extension JSON {
 
 public extension MutableJSON {
 
-  @inlinable
+  @export(implementation)
   func copy() -> JSON? {
     assert(root != nil)
     return yyjson_mut_doc_imut_copy(rawAddress, nil).map(JSON.init)
   }
 
-  @inlinable
+  @export(implementation)
   func copyMutable() -> MutableJSON? {
     assert(root != nil)
     return yyjson_mut_doc_mut_copy(rawAddress, nil).map(MutableJSON.init)
@@ -206,7 +206,7 @@ public extension MutableJSON {
 public extension MutableJSONValue {
   /// Copies and returns a new immutable document. This makes a `deep-copy` on the mutable value.
   /// This function is recursive and may cause a stack overflow if the object level is too deep.
-  @inlinable
+  @export(implementation)
   func copy() -> JSON? {
     yyjson_mut_val_imut_copy(rawAddress, nil).map(JSON.init)
   }

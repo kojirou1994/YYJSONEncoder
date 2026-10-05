@@ -14,7 +14,7 @@
 //}
 //
 //extension JSON: JSONPointerQueryable {
-//  @inlinable
+//  @export(implementation)
 //  public func value(byJSONPointer buffer: UnsafeRawBufferPointer) -> Result<JSONValue, JSONPointerError> {
 //    var err = yyjson_ptr_err()
 //    return yyjson_doc_ptr_getx(rawAddress, buffer.baseAddress, buffer.count, &err)
@@ -23,7 +23,7 @@
 //}
 //
 //extension MutableJSON: JSONPointerSettable {
-//  @inlinable
+//  @export(implementation)
 //  public func value(byJSONPointer buffer: UnsafeRawBufferPointer) -> Result<MutableJSONValue, JSONPointerError> {
 //    var err = yyjson_ptr_err()
 //    // TODO: support context
@@ -31,13 +31,13 @@
 //      .map { .success(.init($0, self)) } ?? .failure(.init(err))
 //  }
 //
-//  @inlinable
+//  @export(implementation)
 //  public func set(_ value: MutableJSONValue, byJSONPointer buffer: UnsafeRawBufferPointer, createParent: Bool) -> Result<Void, JSONPointerError> {
 //    var err = yyjson_ptr_err()
 //    return yyjson_mut_doc_ptr_setx(docPointer, buffer.baseAddress, buffer.count, value.valPointer, createParent, nil, &err) ? .success(()) : .failure(.init(err))
 //  }
 //
-//  @inlinable
+//  @export(implementation)
 //  public func remove(byJSONPointer buffer: UnsafeRawBufferPointer) -> Result<MutableJSONValue, JSONPointerError> {
 //    var err = yyjson_ptr_err()
 //    return yyjson_mut_doc_ptr_removex(docPointer, buffer.baseAddress, buffer.count, nil, &err)
@@ -46,7 +46,7 @@
 //}
 //
 //extension JSONValue: JSONPointerQueryable {
-//  @inlinable
+//  @export(implementation)
 //  public func value(byJSONPointer buffer: UnsafeRawBufferPointer) -> Result<JSONValue, JSONPointerError> {
 //    var err = yyjson_ptr_err()
 //    return yyjson_ptr_getx(valPointer, buffer.baseAddress, buffer.count, &err)
@@ -55,7 +55,7 @@
 //}
 //
 //extension MutableJSONValue: JSONPointerSettable {
-//  @inlinable
+//  @export(implementation)
 //  public func value(byJSONPointer buffer: UnsafeRawBufferPointer) -> Result<MutableJSONValue, JSONPointerError> {
 //    var err = yyjson_ptr_err()
 //    // TODO: support context
@@ -63,13 +63,13 @@
 //      .map { .success(.init($0, document)) } ?? .failure(.init(err))
 //  }
 //
-//  @inlinable
+//  @export(implementation)
 //  public func set(_ value: MutableJSONValue, byJSONPointer buffer: UnsafeRawBufferPointer, createParent: Bool) -> Result<Void, JSONPointerError> {
 //    var err = yyjson_ptr_err()
 //    return yyjson_mut_ptr_setx(valPointer, buffer.baseAddress, buffer.count, value.valPointer, document.docPointer, createParent, nil, &err) ? .success(()) : .failure(.init(err))
 //  }
 //
-//  @inlinable
+//  @export(implementation)
 //  public func remove(byJSONPointer buffer: UnsafeRawBufferPointer) -> Result<MutableJSONValue, JSONPointerError> {
 //    var err = yyjson_ptr_err()
 //    return yyjson_mut_ptr_removex(valPointer, buffer.baseAddress, buffer.count, nil, &err)

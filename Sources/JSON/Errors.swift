@@ -2,7 +2,7 @@ import yyjson
 import CUtility
 
 public struct JSONReadError: Error, @unchecked Sendable {
-  @inlinable
+  @export(implementation)
   internal init(_ err: yyjson_read_err) {
     self.err = err
     assert(code != .success)
@@ -14,19 +14,19 @@ public struct JSONReadError: Error, @unchecked Sendable {
 
 public extension JSONReadError {
   /// Error code
-  @inlinable
+  @export(implementation)
   var code: Code {
     .init(rawValue: err.code)
   }
 
   /// Short error message
-  @inlinable
+  @export(implementation)
   var message: StaticCString {
     .init(cString: err.msg)
   }
 
   /// Error byte position for input data (0 for success)
-  @inlinable
+  @export(implementation)
   var position: Int {
     err.pos
   }
@@ -36,7 +36,7 @@ extension JSONReadError {
   public struct Code: RawRepresentable {
     public let rawValue: UInt32
 
-    @inlinable
+    @export(implementation)
     public init(rawValue: UInt32) {
       self.rawValue = rawValue
     }
@@ -50,12 +50,12 @@ extension JSONReadError: CustomStringConvertible {
 }
 
 public extension JSONReadError.Code {
-  @_alwaysEmitIntoClient
+  @export(implementation)
   static var success: Self { .init(rawValue: YYJSON_READ_SUCCESS) }
 }
 
 public struct JSONWriteError: Error, @unchecked Sendable {
-  @inlinable
+  @export(implementation)
   internal init(_ err: yyjson_write_err) {
     self.err = err
     assert(code != .success)
@@ -73,13 +73,13 @@ extension JSONWriteError: CustomStringConvertible {
 
 public extension JSONWriteError {
   /// Error code
-  @inlinable
+  @export(implementation)
   var code: Code {
     .init(rawValue: err.code)
   }
 
   /// Short error message
-  @inlinable
+  @export(implementation)
   var message: StaticCString {
     .init(cString: err.msg)
   }
@@ -91,7 +91,7 @@ extension JSONWriteError {
 
     public let rawValue: yyjson_write_code
 
-    @inlinable
+    @export(implementation)
     public init(rawValue: yyjson_write_code) {
       self.rawValue = rawValue
     }
@@ -99,12 +99,12 @@ extension JSONWriteError {
 }
 
 public extension JSONWriteError.Code {
-  @_alwaysEmitIntoClient
+  @export(implementation)
   static var success: Self { .init(rawValue: YYJSON_WRITE_SUCCESS) }
 }
 
 public struct JSONPointerError: Error, @unchecked Sendable {
-  @inlinable
+  @export(implementation)
   internal init(_ err: yyjson_ptr_err) {
     self.err = err
     assert(code != .none)
@@ -116,19 +116,19 @@ public struct JSONPointerError: Error, @unchecked Sendable {
 
 public extension JSONPointerError {
   /// Error code
-  @inlinable
+  @export(implementation)
   var code: Code {
     .init(rawValue: err.code)
   }
 
   /// Short error message
-  @inlinable
+  @export(implementation)
   var message: StaticCString {
     .init(cString: err.msg)
   }
 
   /// Error byte position for input data (0 for success)
-  @inlinable
+  @export(implementation)
   var position: Int {
     err.pos
   }
@@ -138,7 +138,7 @@ extension JSONPointerError {
   public struct Code: RawRepresentable {
     public var rawValue: yyjson_ptr_code
 
-    @inlinable
+    @export(implementation)
     public init(rawValue: yyjson_ptr_code) {
       self.rawValue = rawValue
     }
@@ -146,6 +146,6 @@ extension JSONPointerError {
 }
 
 public extension JSONPointerError.Code {
-  @_alwaysEmitIntoClient
+  @export(implementation)
   static var none: Self { .init(rawValue: YYJSON_PTR_ERR_NONE) }
 }

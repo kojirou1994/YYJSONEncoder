@@ -80,32 +80,32 @@ public extension JSONValueProtocol where Self: ~Copyable, Self: ~Escapable {
 
   // MARK: Safe Value Getter
 
-  @inlinable
+  @export(implementation)
   var bool: Bool? {
     isBool ? unsafeBool : nil
   }
 
-  @inlinable
+  @export(implementation)
   var uint64: UInt64? {
     isUnsignedInteger ? unsafeUInt64 : nil
   }
 
-  @inlinable
+  @export(implementation)
   var int64: Int64? {
     isSignedInteger ? unsafeInt64 : nil
   }
 
-  @inlinable
+  @export(implementation)
   var double: Double? {
     isDouble ? unsafeDouble : nil
   }
 
-  @inlinable
+  @export(implementation)
   var number: Double? {
     isNumber ? unsafeNumber : nil
   }
 
-  @inlinable
+  @export(implementation)
   var rawSpan: RawSpan? {
     @_lifetime(borrow self)
     get {
@@ -117,7 +117,7 @@ public extension JSONValueProtocol where Self: ~Copyable, Self: ~Escapable {
     }
   }
 
-  @inlinable
+  @export(implementation)
   var stringSpan: RawSpan? {
     @_lifetime(borrow self)
     get {
@@ -130,13 +130,13 @@ public extension JSONValueProtocol where Self: ~Copyable, Self: ~Escapable {
   }
 
   /// copied raw
-  @inlinable
+  @export(implementation)
   var raw: String? {
     isRaw ? String(decoding: UnsafeRawBufferPointer(start: unsafeRaw, count: length), as: UTF8.self) : nil
   }
 
   /// copied string
-  @inlinable
+  @export(implementation)
   var string: String? {
     isString ? String(decoding: UnsafeRawBufferPointer(start: unsafeString, count: length), as: UTF8.self) : nil
   }
@@ -175,22 +175,22 @@ public extension JSONValueProtocol where Self: ~Copyable, Self: ~Escapable {
 
 // MARK: equal operators
 public extension JSONValueProtocol where Self: ~Copyable, Self: ~Escapable {
-  @inlinable
+  @export(implementation)
   static func == (lhs: borrowing Self, rhs: Bool) -> Bool {
     lhs.isBool && lhs.unsafeBool == rhs
   }
 
-  @inlinable
+  @export(implementation)
   static func == (lhs: borrowing Self, rhs: some UnsignedInteger) -> Bool {
     lhs.isUnsignedInteger && lhs.unsafeUInt64 == rhs
   }
 
-  @inlinable
+  @export(implementation)
   static func == (lhs: borrowing Self, rhs: some SignedInteger) -> Bool {
     lhs.isSignedInteger && lhs.unsafeInt64 == rhs
   }
 
-  @inlinable
+  @export(implementation)
   static func == (lhs: borrowing Self, rhs: Double) -> Bool {
     lhs.isDouble && lhs.unsafeDouble == rhs
   }

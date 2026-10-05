@@ -17,7 +17,7 @@ public struct MutableJSONValue {
 
 extension MutableJSONValue {
 
-  @inlinable
+  @export(implementation)
   public static func == (lhs: Self, rhs: Self) -> Bool {
     unsafe_yyjson_mut_equals(lhs.rawAddress, rhs.rawAddress)
   }
@@ -42,93 +42,93 @@ extension MutableJSONValue {
     public let rawValue: MutableJSONValue
   }
 
-  @inlinable
+  @export(implementation)
   public subscript(index: Int) -> MutableJSONValue? {
     yyjson_mut_arr_get(rawAddress, index)
       .map { .init($0, document) }
   }
 
-  @inlinable
+  @export(implementation)
   public var typeDescription: StaticCString {
     .init(cString: yyjson_mut_get_type_desc(rawAddress))
   }
 
-  @inlinable
+  @export(implementation)
   public var isRaw: Bool {
     unsafe_yyjson_is_raw(rawAddress)
   }
 
-  @inlinable
+  @export(implementation)
   public var isNull: Bool {
     unsafe_yyjson_is_null(rawAddress)
   }
 
-  @inlinable
+  @export(implementation)
   public var isTrue: Bool {
     unsafe_yyjson_is_true(rawAddress)
   }
 
-  @inlinable
+  @export(implementation)
   public var isFalse: Bool {
     unsafe_yyjson_is_false(rawAddress)
   }
 
-  @inlinable
+  @export(implementation)
   public var isBool: Bool {
     unsafe_yyjson_is_bool(rawAddress)
   }
 
-  @inlinable
+  @export(implementation)
   public var isUnsignedInteger: Bool {
     unsafe_yyjson_is_uint(rawAddress)
   }
 
-  @inlinable
+  @export(implementation)
   public var isSignedInteger: Bool {
     unsafe_yyjson_is_sint(rawAddress)
   }
 
-  @inlinable
+  @export(implementation)
   public var isInteger: Bool {
     unsafe_yyjson_is_int(rawAddress)
   }
 
-  @inlinable
+  @export(implementation)
   public var isDouble: Bool {
     unsafe_yyjson_is_real(rawAddress)
   }
 
-  @inlinable
+  @export(implementation)
   public var isNumber: Bool {
     unsafe_yyjson_is_num(rawAddress)
   }
 
-  @inlinable
+  @export(implementation)
   public var isString: Bool {
     unsafe_yyjson_is_str(rawAddress)
   }
 
-  @inlinable
+  @export(implementation)
   public var isArray: Bool {
     unsafe_yyjson_is_arr(rawAddress)
   }
 
-  @inlinable
+  @export(implementation)
   public var isObject: Bool {
     unsafe_yyjson_is_obj(rawAddress)
   }
 
-  @inlinable
+  @export(implementation)
   public var isContainer: Bool {
     unsafe_yyjson_is_ctn(rawAddress)
   }
 
-  @inlinable
+  @export(implementation)
   public func unsafeSetNull() {
     unsafe_yyjson_set_null(rawAddress)
   }
 
-  @inlinable
+  @export(implementation)
   public var unsafeBool: Bool {
     get {
       unsafe_yyjson_get_bool(rawAddress)
@@ -138,7 +138,7 @@ extension MutableJSONValue {
     }
   }
 
-  @inlinable
+  @export(implementation)
   public var unsafeUInt64: UInt64 {
     get {
       unsafe_yyjson_get_uint(rawAddress)
@@ -148,7 +148,7 @@ extension MutableJSONValue {
     }
   }
 
-  @inlinable
+  @export(implementation)
   public var unsafeInt64: Int64 {
     get {
       unsafe_yyjson_get_sint(rawAddress)
@@ -158,7 +158,7 @@ extension MutableJSONValue {
     }
   }
 
-  @inlinable
+  @export(implementation)
   public var unsafeDouble: Double {
     get {
       unsafe_yyjson_get_real(rawAddress)
@@ -168,53 +168,53 @@ extension MutableJSONValue {
     }
   }
 
-  @inlinable
+  @export(implementation)
   public var unsafeNumber: Double {
     get {
       unsafe_yyjson_get_num(rawAddress)
     }
   }
 
-  @inlinable
+  @export(implementation)
   public var unsafeRaw: UnsafePointer<CChar> {
     get {
       unsafe_yyjson_get_raw(rawAddress)
     }
   }
 
-  @inlinable
+  @export(implementation)
   public var unsafeString: UnsafePointer<CChar> {
     get {
       unsafe_yyjson_get_str(rawAddress)
     }
   }
 
-  @inlinable
+  @export(implementation)
   public var length: Int {
     unsafe_yyjson_get_len(rawAddress)
   }
 
-  @inlinable
+  @export(implementation)
   public func equals(toString buffer: UnsafeRawBufferPointer) -> Bool {
     unsafe_yyjson_equals_strn(rawAddress, buffer.baseAddress, buffer.count)
   }
 
-  @inlinable
+  @export(implementation)
   public func set(fpToFloat: Bool) {
     yyjson_mut_set_fp_to_float(rawAddress, fpToFloat)
   }
 
-  @inlinable
+  @export(implementation)
   public func set(prec: CInt) {
     yyjson_mut_set_fp_to_fixed(rawAddress, prec)
   }
 
-  @inlinable
+  @export(implementation)
   public func set(noesc: Bool) {
     yyjson_mut_set_str_noesc(rawAddress, noesc)
   }
 
-  @inlinable
+  @export(implementation)
   public func writeNumber(to string: UnsafeMutablePointer<CChar>) {
     yyjson_mut_write_number(rawAddress, string)
   }
@@ -223,51 +223,51 @@ extension MutableJSONValue {
 
 extension MutableJSONValue.Array {
 
-  @inlinable
+  @export(implementation)
   public init() {
     fatalError()
 //    let doc = MutableJSON()!
 //    self = doc.createArray()!.array!
   }
 
-  @inlinable
+  @export(implementation)
   public func insert(_ newElement: MutableJSONValue, at i: Int) {
     assertSameDocument(newElement)
     precondition(yyjson_mut_arr_insert(rawValue.rawAddress, newElement.rawAddress, i))
   }
 
-  @inlinable
+  @export(implementation)
   public func append(_ newElement: MutableJSONValue) {
     assertSameDocument(newElement)
     yyjson_mut_arr_append(rawValue.rawAddress, newElement.rawAddress)
   }
 
-  @inlinable
+  @export(implementation)
   public func remove(at i: Int) -> MutableJSONValue {
     .init(yyjson_mut_arr_remove(rawValue.rawAddress, i), rawValue.document)
   }
 
-  @inlinable
+  @export(implementation)
   public func removeFirst() -> MutableJSONValue {
     .init(yyjson_mut_arr_remove_first(rawValue.rawAddress), rawValue.document)
   }
 
-  @inlinable
+  @export(implementation)
   public func removeLast() -> MutableJSONValue {
     .init(yyjson_mut_arr_remove_last(rawValue.rawAddress), rawValue.document)
   }
 
-  @inlinable
+  @export(implementation)
   public func removeAll(keepingCapacity keepCapacity: Bool) {
     yyjson_mut_arr_clear(rawValue.rawAddress)
   }
 
-  @inlinable
+  @export(implementation)
   public func removeSubrange(_ bounds: Range<Int>) {
     yyjson_mut_arr_remove_range(rawValue.rawAddress, bounds.lowerBound, bounds.upperBound)
   }
 
-  @inlinable
+  @export(implementation)
   public func rotate(at i: Int) -> Bool {
     yyjson_mut_arr_rotate(rawValue.rawAddress, i)
   }
@@ -282,7 +282,7 @@ extension MutableJSONValue.Array {
       .map { MutableJSONValue($0, rawValue.document) }
   }
 
-  @inlinable
+  @export(implementation)
   public subscript(position: Int) -> MutableJSONValue {
     get {
 //      assert(indices.contains(position))
@@ -295,7 +295,7 @@ extension MutableJSONValue.Array {
     }
   }
 
-  @inlinable
+  @export(implementation)
   public func makeIterator() -> Iterator {
     var iter: Iterator = .init(rawValue)
     iter.reset()
@@ -316,24 +316,24 @@ extension MutableJSONValue.Array {
     @usableFromInline
     internal var iter: yyjson_mut_arr_iter
 
-    @inlinable
+    @export(implementation)
     public var hasNext: Bool {
       var copy = iter
       return withUnsafeMutablePointer(to: &copy, yyjson_mut_arr_iter_has_next)
     }
 
-    @inlinable
+    @export(implementation)
     public mutating func reset() {
       yyjson_mut_arr_iter_init(array.rawAddress, &iter)
     }
 
-    @inlinable
+    @export(implementation)
     public mutating func removeCurrent() -> MutableJSONValue? {
       yyjson_mut_arr_iter_remove(&iter)
         .map { MutableJSONValue($0, array.document) }
     }
 
-    @inlinable
+    @export(implementation)
     public mutating func next() -> MutableJSONValue? {
       if let val = yyjson_mut_arr_iter_next(&iter) {
         return .init(val, array.document)
@@ -343,13 +343,13 @@ extension MutableJSONValue.Array {
 
   }
 
-  @inlinable
+  @export(implementation)
   public var first: MutableJSONValue? {
     yyjson_mut_arr_get_first(rawValue.rawAddress)
       .map { .init($0, rawValue.document) }
   }
 
-  @inlinable
+  @export(implementation)
   public var last: MutableJSONValue? {
     yyjson_mut_arr_get_last(rawValue.rawAddress)
       .map { .init($0, rawValue.document) }
@@ -362,17 +362,17 @@ extension MutableJSONValue.Object {
       .map { .init($0, rawValue.document) }
   }
 
-  @inlinable
+  @export(implementation)
   public func add(key: MutableJSONValue, value: MutableJSONValue) {
     precondition(yyjson_mut_obj_add(self.rawValue.rawAddress, key.rawAddress, value.rawAddress))
   }
 
-  @inlinable
+  @export(implementation)
   public func put(key: MutableJSONValue, value: MutableJSONValue) {
     precondition(yyjson_mut_obj_put(self.rawValue.rawAddress, key.rawAddress, value.rawAddress))
   }
 
-  @inlinable
+  @export(implementation)
   public func rename(key: some ContiguousUTF8Bytes, newKey: some ContiguousUTF8Bytes) -> Bool {
     key.withContiguousUTF8Bytes { key in
       newKey.withContiguousUTF8Bytes { newKey in
@@ -381,13 +381,13 @@ extension MutableJSONValue.Object {
     }
   }
 
-  @inlinable
+  @export(implementation)
   public func removeAll(key: MutableJSONValue) -> MutableJSONValue? {
     yyjson_mut_obj_remove(rawValue.rawAddress, key.rawAddress)
       .map { MutableJSONValue($0, rawValue.document) }
   }
 
-  @inlinable
+  @export(implementation)
   public func removeAll(string: some ContiguousUTF8Bytes) -> MutableJSONValue? {
     string.withContiguousUTF8Bytes { keyBuffer in
       yyjson_mut_obj_remove_strn(rawValue.rawAddress, keyBuffer.baseAddress, keyBuffer.count)
@@ -395,7 +395,7 @@ extension MutableJSONValue.Object {
     .map { MutableJSONValue($0, rawValue.document) }
   }
 
-  @inlinable
+  @export(implementation)
   public func removeAll(key: some ContiguousUTF8Bytes) -> MutableJSONValue? {
     key.withContiguousUTF8Bytes { keyBuffer in
       yyjson_mut_obj_remove_keyn(rawValue.rawAddress, keyBuffer.baseAddress, keyBuffer.count)
@@ -403,13 +403,13 @@ extension MutableJSONValue.Object {
     .map { MutableJSONValue($0, rawValue.document) }
   }
 
-  @inlinable
+  @export(implementation)
   public func clear() {
     let success = yyjson_mut_obj_clear(rawValue.rawAddress)
     assert(success)
   }
 
-  @inlinable
+  @export(implementation)
   public func makeIterator() -> Iterator {
     var iter: Iterator = .init(rawValue)
     iter.reset()
@@ -430,35 +430,35 @@ extension MutableJSONValue.Object {
     @usableFromInline
     internal var iter: yyjson_mut_obj_iter
 
-    @inlinable
+    @export(implementation)
     public var hasNext: Bool {
       var copy = iter
       return withUnsafeMutablePointer(to: &copy, yyjson_mut_obj_iter_has_next)
     }
 
-    @inlinable
+    @export(implementation)
     public func value(for key: MutableJSONValue) -> MutableJSONValue {
       .init(yyjson_mut_obj_iter_get_val(key.rawAddress), object.document)
     }
 
-    @inlinable
+    @export(implementation)
     public mutating func itearate(to keyBuffer: UnsafeRawBufferPointer) -> MutableJSONValue? {
       yyjson_mut_obj_iter_getn(&iter, keyBuffer.baseAddress, keyBuffer.count)
         .map { .init($0, object.document) }
     }
 
-    @inlinable
+    @export(implementation)
     public mutating func reset() {
       yyjson_mut_obj_iter_init(object.rawAddress, &iter)
     }
 
-    @inlinable
+    @export(implementation)
     public mutating func removeCurrent() -> MutableJSONValue? {
       yyjson_mut_obj_iter_remove(&iter)
         .map { MutableJSONValue($0, object.document) }
     }
 
-    @inlinable
+    @export(implementation)
     public mutating func next() -> MutableJSONValue? {
       yyjson_mut_obj_iter_next(&iter)
         .map { MutableJSONValue($0, object.document) }
