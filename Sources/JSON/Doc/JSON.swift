@@ -43,9 +43,9 @@ public extension JSON {
   }
 
   @export(implementation)
-  static func read(path: UnsafePointer<CChar>, options: ReadOptions = .none)  throws(JSONReadError) -> JSON {
+  static func read(path: some CStringConvertible, options: ReadOptions = .none)  throws(JSONReadError) -> JSON {
     var err = yyjson_read_err()
-    if let doc = yyjson_read_file(path, options.rawValue, nil, &err) {
+    if let doc = path.withUnsafeCString({ yyjson_read_file($0, options.rawValue, nil, &err) }) {
       return .init(doc)
     }
     throw JSONReadError(err)
